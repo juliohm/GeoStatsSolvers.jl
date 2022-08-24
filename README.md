@@ -99,5 +99,5 @@ problems, it has various issues as described in
 [build-img]: https://img.shields.io/github/workflow/status/JuliaEarth/GeoStatsSolvers.jl/CI?style=flat-square
 [build-url]: https://github.com/JuliaEarth/GeoStatsSolvers.jl/actions
 
-[codecov-img]: https://codecov.io/gh/JuliaEarth/GeoStatsSolvers.jl/branch/master/graph/badge.svg
+[codecov-img]: https://img.shields.io/codecov/c/github/JuliaEarth/GeoStatsSolvers.jl?style=flat-square
 [codecov-url]: https://codecov.io/gh/JuliaEarth/GeoStatsSolvers.jl
