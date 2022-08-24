@@ -96,6 +96,10 @@ point of the domain. Although this solver is widely used in geospatial
 problems, it has various issues as described in
 [Hoffimann et al. 2021](https://arxiv.org/abs/2102.08791).
 
+## Asking for help
+
+If you have any questions, please [contact our community](https://juliaearth.github.io/GeoStats.jl/stable/about/community.html).
+
 [build-img]: https://img.shields.io/github/workflow/status/JuliaEarth/GeoStatsSolvers.jl/CI?style=flat-square
 [build-url]: https://github.com/JuliaEarth/GeoStatsSolvers.jl/actions
 
