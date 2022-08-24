@@ -5,7 +5,7 @@
 Built-in solvers for the [GeoStats.jl](https://github.com/JuliaEarth/GeoStats.jl) framework.
 For examples of usage, please check the main documentation.
 
-## Estimation solvers
+## Estimation
 
 #### IDW
 
@@ -42,7 +42,7 @@ Kriging is a popular method in various industries due to its good statistical pr
 Unlike the previous solvers, Kriging relies on the specification of a variogram model, which can be
 fit to geospatial data.
 
-## Simulation solvers
+## Simulation
 
 #### LUGS
 
@@ -86,7 +86,7 @@ This solver provides an implementation of the stochastic partial differential eq
 The method relies on a discretization of the Laplace-Beltrami operator on meshes and is
 adequate for highly curved domains (e.g. surfaces).
 
-## Learning solvers
+## Learning
 
 #### PointwiseLearn
 
