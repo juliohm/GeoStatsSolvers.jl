@@ -1,7 +1,7 @@
 name = "GeoStatsSolvers"
 uuid = "50e95529-e670-4fa6-84ad-e28f686cc091"
 authors = ["Júlio Hoffimann <julio.hoffimann@gmail.com> and contributors"]
-version = "0.1.1"
+version = "0.1.0"
 
 [deps]
 CpuId = "adafc99b-e345-5852-983c-f28acb93d879"
