@@ -12,6 +12,14 @@ FFT Gaussian simulation.
 * `variogram` - theoretical variogram (default to `GaussianVariogram()`)
 * `mean`      - mean of Gaussian field (default to `0`)
 
+In the case of conditional simulation, the following parameters
+can be passed to the underlying [`Kriging`](@ref) solver:
+
+* `minneighbors` - Minimum number of neighbors (default to `1`)
+* `maxneighbors` - Maximum number of neighbors (default to `nothing`)
+* `neighborhood` - Search neighborhood (default to `nothing`)
+* `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
+
 ## Global parameters
 
 * `threads` - number of threads in FFT (default to all physical cores)
@@ -20,18 +28,23 @@ FFT Gaussian simulation.
 ### References
 
 * Gutjahr 1997. [General joint conditional simulations using a fast
-Fourier transform method](https://link.springer.com/article/10.1007/BF02769641)
+  Fourier transform method](https://link.springer.com/article/10.1007/BF02769641)
+
+* Gómez-Hernández, J. & Srivastava, R. 2021. [One Step at a Time: The Origins
+  of Sequential Simulation and Beyond](https://link.springer.com/article/10.1007/s11004-021-09926-0)
 """
 @simsolver FFTGS begin
   @param  variogram = GaussianVariogram()
-  @param  mean = 0.0
+  @param  mean = 0
+  @param  minneighbors = 1
+  @param  maxneighbors = nothing
+  @param  neighborhood = nothing
+  @param  distance = Euclidean()
   @global threads = cpucores()
   @global rng = Random.GLOBAL_RNG
 end
 
 function preprocess(problem::SimulationProblem, solver::FFTGS)
-  hasdata(problem) && @error "conditional simulation is not implemented"
-  
   # retrieve problem info
   pdomain  = domain(problem)
   pgrid, _ = unview(pdomain)
@@ -61,20 +74,50 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       μ = varparams.mean
 
       # check stationarity
-      @assert isstationary(γ) "variogram model must be stationary"
+      if !isstationary(γ)
+        throw(ArgumentError("variogram model must be stationary"))
+      end
 
       # compute covariances between centroid and all points
       𝒟c = [centroid(pgrid, cindex)]
       𝒟p = [centroid(pgrid, eindex) for eindex in 1:nelms]
-      covs = sill(γ) .- pairwise(γ, 𝒟c, 𝒟p)
-      C = reshape(covs, dims)
+      cs = sill(γ) .- pairwise(γ, 𝒟c, 𝒟p)
+      C  = reshape(cs, dims)
 
       # move to frequency domain
       F = sqrt.(abs.(fft(fftshift(C))))
       F[1] = zero(V) # set reference level
 
+      # perform Kriging in case of conditional simulation
+      if hasdata(problem)
+        pdata = data(problem)
+        table = values(pdata)
+        if var ∈ Tables.schema(table).names
+          # estimate conditional mean
+          prob = EstimationProblem(pdata, pdomain, var)
+          krig = Kriging(var => (
+              variogram = γ, mean = μ,
+              minneighbors = varparams.minneighbors,
+              maxneighbors = varparams.maxneighbors,
+              neighborhood = varparams.neighborhood,
+              distance     = varparams.distance
+          ))
+          z̄ = solve(prob, krig)[var]
+
+          # find data locations in problem domain
+          ddomain  = domain(pdata)
+          ndata    = nelements(ddomain)
+          point(i) = centroid(ddomain, i)
+          searcher = KNearestSearch(pdomain, 1)
+          found    = [search(point(i), searcher) for i in 1:ndata]
+          dinds    = unique(first.(found))
+        else
+          z̄, krig, dinds = nothing, nothing, nothing
+        end
+      end
+
       # save preprocessed inputs for variable
-      preproc[var] = (γ=γ, μ=μ, F=F)
+      preproc[var] = (γ=γ, μ=μ, F=F, z̄=z̄, krig=krig, dinds=dinds)
     end
   end
 
@@ -94,7 +137,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
 
   varreal = map(covars.names) do var
     # unpack preprocessed parameters
-    γ, μ, F = preproc[var]
+    γ, μ, F, z̄, krig, dinds = preproc[var]
 
     # determine value type
     V = mactypeof[var]
@@ -109,8 +152,27 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
     σ² = Statistics.var(Z, mean=zero(V))
     Z .= √(sill(γ) / σ²) .* Z .+ μ
 
-    # flatten result
-    var => Z[inds]
+    # unconditional realization
+    zᵤ = Z[inds]
+
+    # perform conditioning if necessary
+    z = if isnothing(krig)
+      zᵤ # we are all set
+    else
+      # view realization at data locations
+      vals = view(zᵤ, dinds)
+      vdom = view(pdomain, dinds)
+      data = georef((;var => vals), vdom)
+
+      # solve estimation problem
+      prob = EstimationProblem(data, pdomain, var)
+      z̄ᵤ   = solve(prob, krig)[var]
+
+      # add residual field
+      z̄ .+ (zᵤ .- z̄ᵤ)
+    end
+
+    var => z
   end
 
   Dict(varreal)
