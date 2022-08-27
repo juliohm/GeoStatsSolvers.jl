@@ -89,6 +89,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       F[1] = zero(V) # set reference level
 
       # perform Kriging in case of conditional simulation
+      z̄, krig, dinds = nothing, nothing, nothing
       if hasdata(problem)
         pdata = data(problem)
         table = values(pdata)
@@ -111,8 +112,6 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
           searcher = KNearestSearch(pdomain, 1)
           found    = [search(point(i), searcher) for i in 1:ndata]
           dinds    = unique(first.(found))
-        else
-          z̄, krig, dinds = nothing, nothing, nothing
         end
       end
 
