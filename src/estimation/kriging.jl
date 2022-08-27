@@ -173,22 +173,15 @@ function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
     # unpack preprocessed parameters
     estimator = preproc[var].estimator
 
-    # retrieve non-missing data
-    locs = findall(!ismissing, pdata[var])
-    𝒟 = view(pdata, locs)
-
     # fit estimator once
-    krig = fit(estimator, 𝒟)
+    krig = fit(estimator, pdata)
 
-    # predict at all locations
-    locations = traverse(pdomain, LinearPath())
-    predictions = map(locations) do loc
-      uₒ = pdomain[loc]
-      predict(krig, var, uₒ)
-    end
+    # predict everywhere
+    inds = traverse(pdomain, LinearPath())
+    pred = [predict(krig, var, pdomain[ind]) for ind in inds]
 
-    varμ = first.(predictions)
-    varσ = last.(predictions)
+    varμ = first.(pred)
+    varσ = last.(pred)
 
     varμ, varσ
 end
@@ -207,11 +200,11 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
     # pre-allocate memory for neighbors
     neighbors = Vector{Int}(undef, maxneighbors)
 
-    # predict at all locations
-    locations = traverse(pdomain, LinearPath())
-    predictions = map(locations) do loc
-
-      pₒ = centroid(pdomain, loc)
+    # predict location by location
+    inds = traverse(pdomain, LinearPath())
+    pred = map(inds) do ind
+      # centroid of element
+      pₒ = centroid(pdomain, ind)
 
       # find neighbors with previously estimated values
       nneigh = search!(neighbors, pₒ, bsearcher)
@@ -230,15 +223,15 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
         krig = fit(estimator, 𝒟)
 
         # retrieve element at location
-        uₒ = pdomain[loc]
+        uₒ = pdomain[ind]
 
         # save mean and variance
         predict(krig, var, uₒ)
       end
     end
 
-    varμ = first.(predictions)
-    varσ = last.(predictions)
+    varμ = first.(pred)
+    varσ = last.(pred)
 
     varμ, varσ
 end
