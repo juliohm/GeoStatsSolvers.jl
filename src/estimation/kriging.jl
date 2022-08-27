@@ -165,9 +165,37 @@ function solve(problem::EstimationProblem, solver::Kriging)
   georef((; μs..., σs...), pdomain)
 end
 
+function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
+    # retrieve problem info
+    pdata   = data(problem)
+    pdomain = domain(problem)
+
+    # unpack preprocessed parameters
+    estimator = preproc[var].estimator
+
+    # retrieve non-missing data
+    locs = findall(!ismissing, pdata[var])
+    𝒟 = view(pdata, locs)
+
+    # fit estimator once
+    krig = fit(estimator, 𝒟)
+
+    # predict at all locations
+    locations = traverse(pdomain, LinearPath())
+    predictions = map(locations) do loc
+      uₒ = pdomain[loc]
+      predict(krig, var, uₒ)
+    end
+
+    varμ = first.(predictions)
+    varσ = last.(predictions)
+
+    varμ, varσ
+end
+
 function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
     # retrieve problem info
-    pdata = data(problem)
+    pdata   = data(problem)
     pdomain = domain(problem)
 
     # unpack preprocessed parameters
@@ -207,34 +235,6 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
         # save mean and variance
         predict(krig, var, uₒ)
       end
-    end
-
-    varμ = first.(predictions)
-    varσ = last.(predictions)
-
-    varμ, varσ
-end
-
-function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
-    # retrieve problem info
-    pdata = data(problem)
-    pdomain = domain(problem)
-
-    # unpack preprocessed parameters
-    estimator = preproc[var].estimator
-
-    # retrieve non-missing data
-    locs = findall(!ismissing, pdata[var])
-    𝒟 = view(pdata, locs)
-
-    # fit estimator once
-    krig = fit(estimator, 𝒟)
-
-    # predict at all locations
-    locations = traverse(pdomain, LinearPath())
-    predictions = map(locations) do loc
-      uₒ = pdomain[loc]
-      predict(krig, var, uₒ)
     end
 
     varμ = first.(predictions)
