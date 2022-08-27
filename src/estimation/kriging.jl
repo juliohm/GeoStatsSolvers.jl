@@ -152,10 +152,10 @@ function solve(problem::EstimationProblem, solver::Kriging)
     # exact vs. approximate Kriging
     if isnothing(maxneighbors)
       # perform Kriging with all samples as neighbors
-      varμ, varσ = solve_exact(prob, var, preproc)
+      varμ, varσ = exactsolve(prob, var, preproc)
     else
       # perform Kriging with reduced number of neighbors
-      varμ, varσ = solve_approx(prob, var, preproc)
+      varμ, varσ = approxsolve(prob, var, preproc)
     end
 
     push!(μs, var => varμ)
@@ -165,7 +165,7 @@ function solve(problem::EstimationProblem, solver::Kriging)
   georef((; μs..., σs...), pdomain)
 end
 
-function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
+function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
     # retrieve problem info
     pdata   = data(problem)
     pdomain = domain(problem)
@@ -186,7 +186,7 @@ function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
     varμ, varσ
 end
 
-function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
+function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
     # retrieve problem info
     pdata   = data(problem)
     pdomain = domain(problem)
@@ -203,13 +203,13 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
     # predict location by location
     inds = traverse(pdomain, LinearPath())
     pred = map(inds) do ind
-      # centroid of element
-      pₒ = centroid(pdomain, ind)
+      # centroid of estimation
+      center = centroid(pdomain, ind)
 
-      # find neighbors with previously estimated values
-      nneigh = search!(neighbors, pₒ, bsearcher)
+      # find neighbors with data
+      nneigh = search!(neighbors, center, bsearcher)
 
-      # skip location in there are too few neighbors
+      # skip if there are too few neighbors
       if nneigh < minneighbors
         missing, missing
       else
@@ -217,16 +217,13 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
         nview = view(neighbors, 1:nneigh)
 
         # view neighborhood with data
-        𝒟 = view(pdata, nview)
+        samples = view(pdata, nview)
 
         # fit estimator to data
-        krig = fit(estimator, 𝒟)
-
-        # retrieve element at location
-        uₒ = pdomain[ind]
+        krig = fit(estimator, samples)
 
         # save mean and variance
-        predict(krig, var, uₒ)
+        predict(krig, var, pdomain[ind])
       end
     end
 
