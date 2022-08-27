@@ -73,7 +73,10 @@ end
 
 function preprocess(problem::EstimationProblem, solver::Kriging)
   # retrieve problem info
-  pdata = data(problem)
+  pdata   = data(problem)
+  dtable  = values(pdata)
+  ddomain = domain(pdata)
+  pdomain = domain(problem)
 
   # result of preprocessing
   preproc = Dict{Symbol,NamedTuple}()
@@ -83,8 +86,23 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       # get user parameters
       varparams = covars.params[(var,)]
 
+      # find non-missing samples for variable
+      cols = Tables.columns(dtable)
+      vals = Tables.getcolumn(cols, var)
+      inds = findall(!ismissing, vals)
+
+      # assert at least one sample is non-missing
+      if isempty(inds)
+        throw(AssertionError("all samples of $var are missing, aborting..."))
+      end
+
+      # subset of non-missing samples
+      vtable  = (;var => collect(skipmissing(vals)))
+      vdomain = view(ddomain, inds)
+      samples = georef(vtable, vdomain)
+
       # determine which Kriging variant to use
-      estimator = kriging_ui(domain(pdata),
+      estimator = kriging_ui(pdomain,
                              varparams.variogram,
                              varparams.mean,
                              varparams.degree,
@@ -95,13 +113,14 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       maxneighbors = varparams.maxneighbors
 
       # determine bounded search method
-      bsearcher = searcher_ui(domain(pdata),
+      bsearcher = searcher_ui(vdomain,
                               varparams.maxneighbors,
                               varparams.distance,
                               varparams.neighborhood)
 
       # save preprocessed input
-      preproc[var] = (estimator=estimator,
+      preproc[var] = (samples=samples,
+                      estimator=estimator,
                       minneighbors=minneighbors,
                       maxneighbors=maxneighbors,
                       bsearcher=bsearcher)
@@ -112,25 +131,38 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
 end
 
 function solve(problem::EstimationProblem, solver::Kriging)
+  # retrive problem info
+  pdomain = domain(problem)
+
   # preprocess user input
   preproc = preprocess(problem, solver)
 
   # results for each variable
   μs = []; σs = []
   for var in name.(variables(problem))
-    if preproc[var].maxneighbors ≠ nothing
-      # perform Kriging with reduced number of neighbors
-      varμ, varσ = solve_approx(problem, var, preproc)
+    # maximum number of neighbors
+    maxneighbors = preproc[var].maxneighbors
+
+    # non-missing samples
+    samples = preproc[var].samples
+
+    # problem for variable
+    prob = EstimationProblem(samples, pdomain, var)
+
+    # exact vs. approximate Kriging
+    if isnothing(maxneighbors)
+      # perform Kriging with all samples as neighbors
+      varμ, varσ = solve_exact(prob, var, preproc)
     else
-      # perform Kriging with all data points as neighbors
-      varμ, varσ = solve_exact(problem, var, preproc)
+      # perform Kriging with reduced number of neighbors
+      varμ, varσ = solve_approx(prob, var, preproc)
     end
 
     push!(μs, var => varμ)
     push!(σs, Symbol(var,"_variance") => varσ)
   end
 
-  georef((; μs..., σs...), domain(problem))
+  georef((; μs..., σs...), pdomain)
 end
 
 function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
@@ -139,7 +171,10 @@ function solve_approx(problem::EstimationProblem, var::Symbol, preproc)
     pdomain = domain(problem)
 
     # unpack preprocessed parameters
-    estimator, minneighbors, maxneighbors, bsearcher = preproc[var]
+    estimator    = preproc[var].estimator
+    minneighbors = preproc[var].minneighbors
+    maxneighbors = preproc[var].maxneighbors
+    bsearcher    = preproc[var].bsearcher
 
     # pre-allocate memory for neighbors
     neighbors = Vector{Int}(undef, maxneighbors)
@@ -186,7 +221,7 @@ function solve_exact(problem::EstimationProblem, var::Symbol, preproc)
     pdomain = domain(problem)
 
     # unpack preprocessed parameters
-    estimator, minneighbors, maxneighbors, bsearcher = preproc[var]
+    estimator = preproc[var].estimator
 
     # retrieve non-missing data
     locs = findall(!ismissing, pdata[var])
