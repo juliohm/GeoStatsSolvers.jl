@@ -166,69 +166,69 @@ function solve(problem::EstimationProblem, solver::Kriging)
 end
 
 function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
-    # retrieve problem info
-    pdata   = data(problem)
-    pdomain = domain(problem)
+  # retrieve problem info
+  pdata   = data(problem)
+  pdomain = domain(problem)
 
-    # unpack preprocessed parameters
-    estimator = preproc[var].estimator
+  # unpack preprocessed parameters
+  estimator = preproc[var].estimator
 
-    # fit estimator once
-    krig = fit(estimator, pdata)
+  # fit estimator once
+  krig = fit(estimator, pdata)
 
-    # predict everywhere
-    inds = traverse(pdomain, LinearPath())
-    pred = [predict(krig, var, pdomain[ind]) for ind in inds]
+  # predict everywhere
+  inds = traverse(pdomain, LinearPath())
+  pred = [predict(krig, var, pdomain[ind]) for ind in inds]
 
-    varμ = first.(pred)
-    varσ = last.(pred)
+  varμ = first.(pred)
+  varσ = last.(pred)
 
-    varμ, varσ
+  varμ, varσ
 end
 
 function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
-    # retrieve problem info
-    pdata   = data(problem)
-    pdomain = domain(problem)
+  # retrieve problem info
+  pdata   = data(problem)
+  pdomain = domain(problem)
 
-    # unpack preprocessed parameters
-    estimator    = preproc[var].estimator
-    minneighbors = preproc[var].minneighbors
-    maxneighbors = preproc[var].maxneighbors
-    bsearcher    = preproc[var].bsearcher
+  # unpack preprocessed parameters
+  estimator    = preproc[var].estimator
+  minneighbors = preproc[var].minneighbors
+  maxneighbors = preproc[var].maxneighbors
+  bsearcher    = preproc[var].bsearcher
 
-    # pre-allocate memory for neighbors
-    neighbors = Vector{Int}(undef, maxneighbors)
+  # pre-allocate memory for neighbors
+  neighbors = Vector{Int}(undef, maxneighbors)
 
-    # predict location by location
-    inds = traverse(pdomain, LinearPath())
-    pred = map(inds) do ind
-      # centroid of estimation
-      center = centroid(pdomain, ind)
+  # predict location by location
+  inds = traverse(pdomain, LinearPath())
+  pred = map(inds) do ind
+    # centroid of estimation
+    center = centroid(pdomain, ind)
 
-      # find neighbors with data
-      nneigh = search!(neighbors, center, bsearcher)
+    # find neighbors with data
+    nneigh = search!(neighbors, center, bsearcher)
 
-      # skip if there are too few neighbors
-      if nneigh < minneighbors
-        missing, missing
-      else
-        # final set of neighbors
-        nview = view(neighbors, 1:nneigh)
+    # skip if there are too few neighbors
+    if nneigh < minneighbors
+      missing, missing
+    else
+      # final set of neighbors
+      nview = view(neighbors, 1:nneigh)
 
-        # view neighborhood with data
-        samples = view(pdata, nview)
+      # view neighborhood with data
+      samples = view(pdata, nview)
 
-        # fit estimator to data
-        krig = fit(estimator, samples)
+      # fit estimator to data
+      krig = fit(estimator, samples)
 
-        # save mean and variance
-        predict(krig, var, pdomain[ind])
-      end
+      # save mean and variance
+      predict(krig, var, pdomain[ind])
     end
+  end
 
-    varμ = first.(pred)
-    varσ = last.(pred)
+  varμ = first.(pred)
+  varσ = last.(pred)
 
-    varμ, varσ
+  varμ, varσ
 end
