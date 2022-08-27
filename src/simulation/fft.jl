@@ -91,11 +91,14 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       # perform Kriging in case of conditional simulation
       z̄, krig, dinds = nothing, nothing, nothing
       if hasdata(problem)
-        pdata = data(problem)
-        table = values(pdata)
-        if var ∈ Tables.schema(table).names
+        pdata   = data(problem)
+        dtable  = values(pdata)
+        ddomain = domain(pdata)
+        if var ∈ Tables.schema(dtable).names
           # estimate conditional mean
-          prob = EstimationProblem(pdata, pdomain, var)
+          kdat = georef(dtable, centroid.(ddomain))
+          kdom = PointSet(centroid.(pdomain))
+          prob = EstimationProblem(kdat, kdom, var)
           krig = Kriging(var => (
               variogram = γ, mean = μ,
               minneighbors = varparams.minneighbors,
@@ -106,7 +109,6 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
           z̄ = solve(prob, krig)[var]
 
           # find data locations in problem domain
-          ddomain  = domain(pdata)
           ndata    = nelements(ddomain)
           point(i) = centroid(ddomain, i)
           searcher = KNearestSearch(pdomain, 1)
@@ -159,12 +161,13 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
       zᵤ # we are all set
     else
       # view realization at data locations
-      vals = view(zᵤ, dinds)
-      vdom = view(pdomain, dinds)
-      data = georef((;var => vals), vdom)
+      dtable  = (;var => view(zᵤ, dinds))
+      ddomain = view(pdomain, dinds)
 
       # solve estimation problem
-      prob = EstimationProblem(data, pdomain, var)
+      kdat = georef(dtable, centroid.(ddomain))
+      kdom = PointSet(centroid.(pdomain))
+      prob = EstimationProblem(kdat, kdom, var)
       z̄ᵤ   = solve(prob, krig)[var]
 
       # add residual field
