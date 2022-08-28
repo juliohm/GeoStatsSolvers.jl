@@ -8,7 +8,7 @@ using CategoricalArrays
 using CoDa
 using LinearAlgebra
 using Plots; gr(size=(600,400))
-using MeshPlots # TODO: replace by MeshViz
+using GeoStatsPlots # TODO: replace by GeoStatsViz
 using ReferenceTests, ImageIO
 using Test, Random
 

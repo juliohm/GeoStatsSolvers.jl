@@ -242,9 +242,9 @@ version = "0.4.0"
 
 [[deps.DensityRatioEstimation]]
 deps = ["LinearAlgebra", "Parameters", "Random", "Requires", "Statistics", "StatsBase"]
-git-tree-sha1 = "ea52547d6aab650e9120b95d2c2dec13bd747436"
+git-tree-sha1 = "bf66188ffadc748d9108482108a9fc62c3eb3637"
 uuid = "ab46fb84-d57c-11e9-2f65-6f72e4a7229f"
-version = "0.6.0"
+version = "1.0.0"
 
 [[deps.Dictionaries]]
 deps = ["Indexing", "Random", "Serialization"]
@@ -426,10 +426,16 @@ uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 version = "1.0.1"
 
 [[deps.GeoStatsBase]]
-deps = ["Combinatorics", "DensityRatioEstimation", "Distances", "Distributed", "Distributions", "LinearAlgebra", "LossFunctions", "MLJModelInterface", "Meshes", "Optim", "Parameters", "RecipesBase", "ReferenceFrameRotations", "ScientificTypes", "StaticArrays", "Statistics", "StatsBase", "TableTransforms", "Tables", "Transducers", "TypedTables"]
-git-tree-sha1 = "1710de8023b357f891ac2637282f0054a8ce6c0a"
+deps = ["Combinatorics", "DensityRatioEstimation", "Distances", "Distributed", "Distributions", "LinearAlgebra", "LossFunctions", "MLJModelInterface", "Meshes", "Optim", "ReferenceFrameRotations", "ScientificTypes", "StaticArrays", "Statistics", "StatsBase", "TableTransforms", "Tables", "Transducers", "TypedTables"]
+git-tree-sha1 = "f061ba0f2147e4f067a10d003a6992a339c03cae"
 uuid = "323cb8eb-fbf6-51c0-afd0-f8fba70507b2"
-version = "0.26.2"
+version = "0.28.1"
+
+[[deps.GeoStatsPlots]]
+deps = ["Distances", "GeoStatsBase", "LinearAlgebra", "MeshPlots", "Meshes", "RecipesBase", "Variography"]
+git-tree-sha1 = "a90413d073b1a7048ccc838cc948a267d4beffef"
+uuid = "cf22561b-6452-4701-9483-6c69015d00e1"
+version = "0.1.0"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -802,9 +808,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "Random", "Sockets"]
-git-tree-sha1 = "d9ab10da9de748859a7780338e1d6566993d1f25"
+git-tree-sha1 = "2f0be365951a88dfb084f754005177e6dfb00ed0"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.3"
+version = "1.1.4"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -817,15 +823,15 @@ version = "0.3.1"
 
 [[deps.MeshPlots]]
 deps = ["CategoricalArrays", "Meshes", "RecipesBase", "Tables"]
-git-tree-sha1 = "7cf4008c71e0ee1378a47add67c93ae2a79cc127"
+git-tree-sha1 = "d654067ff06cc37351839a3363acabcdebfffd58"
 uuid = "de9684d3-f81f-49d9-ae9e-c828b202dea9"
-version = "0.1.1"
+version = "0.1.2"
 
 [[deps.Meshes]]
-deps = ["CategoricalArrays", "CircularArrays", "Distances", "IterTools", "IteratorInterfaceExtensions", "LinearAlgebra", "NearestNeighbors", "Random", "RecipesBase", "ReferenceFrameRotations", "SparseArrays", "SpecialFunctions", "StaticArrays", "StatsBase", "TableTraits", "Tables"]
-git-tree-sha1 = "2e8fa01cd89ccfeb9dcb78e1a6ca6583e824c98c"
+deps = ["CircularArrays", "Distances", "IterTools", "IteratorInterfaceExtensions", "LinearAlgebra", "NearestNeighbors", "Random", "ReferenceFrameRotations", "SparseArrays", "SpecialFunctions", "StaticArrays", "StatsBase", "TableTraits", "Tables"]
+git-tree-sha1 = "d03e0a85aee5e874cfd6eb40a4f889a8c411caa7"
 uuid = "eacbb407-ea5a-433e-ab97-5258b1ca43fa"
-version = "0.23.1"
+version = "0.24.0"
 
 [[deps.MicroCollections]]
 deps = ["BangBang", "InitialValues", "Setfield"]
@@ -976,9 +982,9 @@ version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "0044b23da09b5608b4ecacb4e5e6c6332f833a7e"
+git-tree-sha1 = "3d5bf43e3e8b412656404ed9466f1dcbf7c50269"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.3.2"
+version = "2.4.0"
 
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1351,10 +1357,10 @@ uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
 version = "1.11.0"
 
 [[deps.Variography]]
-deps = ["Distances", "GeoStatsBase", "InteractiveUtils", "LinearAlgebra", "Meshes", "NearestNeighbors", "Optim", "Printf", "Random", "RecipesBase", "Setfield", "SpecialFunctions", "Tables", "Transducers", "Unitful"]
-git-tree-sha1 = "a0d333321c5f4ef48397ba3d8d0efc675b346754"
+deps = ["Distances", "GeoStatsBase", "InteractiveUtils", "LinearAlgebra", "Meshes", "NearestNeighbors", "Optim", "Printf", "Random", "Setfield", "SpecialFunctions", "Tables", "Transducers", "Unitful"]
+git-tree-sha1 = "e1f3910b4cd8359552895a8d5bada69f22684808"
 uuid = "04a0146e-e6df-5636-8d7f-62fa9eb0b20c"
-version = "0.14.7"
+version = "0.15.0"
 
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]
