@@ -3,7 +3,6 @@
 [![][build-img]][build-url] [![][codecov-img]][codecov-url]
 
 Built-in solvers for the [GeoStats.jl](https://github.com/JuliaEarth/GeoStats.jl) framework.
-For examples of usage, please check the main documentation.
 
 ## Estimation
 
