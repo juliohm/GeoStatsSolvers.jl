@@ -30,7 +30,7 @@ import GeoStatsBase: preprocess, solve, solvesingle
 
 include("estimation/idw.jl")
 include("estimation/lwr.jl")
-include("estimation/kriging.jl")
+include("estimation/krig.jl")
 
 include("simulation/lu.jl")
 include("simulation/fft.jl")

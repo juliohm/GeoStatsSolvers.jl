@@ -32,7 +32,7 @@ include("dummy.jl")
 testfiles = [
   "estimation/idw.jl",
   "estimation/lwr.jl",
-  "estimation/kriging.jl",
+  "estimation/krig.jl",
 
   "simulation/lu.jl",
   "simulation/fft.jl",
