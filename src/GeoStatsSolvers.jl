@@ -13,8 +13,8 @@ using Tables
 using Distributions
 using TableTransforms
 using NearestNeighbors
-using SpecialFunctions
 using Distances: Euclidean
+using Bessels: gamma
 using CpuId
 using FFTW
 
