@@ -53,7 +53,8 @@
 
   problem = EstimationProblem(data2D, grid2D, :z)
 
-  solver = Kriging(:z => (variogram=GaussianVariogram(range=35.,nugget=0.),))
+  solver = Kriging(:z => (variogram=GaussianVariogram(range=35.,nugget=0.),
+                          maxneighbors=3))
 
   Random.seed!(2021)
   solution = solve(problem, solver)
