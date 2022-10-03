@@ -15,11 +15,13 @@ and in case there are none, use a `marginal` distribution.
 ## Parameters
 
 * `estimator`    - CDF estimator
-* `neighborhood` - Geospatial neighborhood
-* `maxneighbors` - Maximum number of neighbors
 * `marginal`     - Marginal distribution
-* `path`         - Simulation path
-* `mapping`      - Data mapping method
+* `path`         - Simulation path (default to `LinearPath()`)
+* `minneighbors` - Minimum number of neighbors (default to `1`)
+* `maxneighbors` - Maximum number of neighbors (default to `10`)
+* `neighborhood` - Search neighborhood (default to `nothing`)
+* `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
+* `mapping`      - Data mapping method (default to `NearestMapping()`)
 
 ## Global parameters
 
@@ -27,13 +29,14 @@ and in case there are none, use a `marginal` distribution.
 """
 @simsolver SeqSim begin
   @param estimator
-  @param neighborhood
-  @param minneighbors
-  @param maxneighbors
   @param marginal
-  @param path
-  @param mapping
-  @global rng
+  @param path = LinearPath()
+  @param minneighbors = 1
+  @param maxneighbors = 10
+  @param neighborhood = nothing
+  @param distance = Euclidean()
+  @param mapping = NearestMapping()
+  @global rng = Random.GLOBAL_RNG
 end
 
 function preprocess(problem::SimulationProblem, solver::SeqSim)
@@ -53,16 +56,17 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
       minneighbors = varparams.minneighbors
       maxneighbors = varparams.maxneighbors
 
-      # determine neighbor search method
-      neigh     = varparams.neighborhood
-      searcher  = BallSearch(pdomain, neigh)
-      bsearcher = BoundedSearch(searcher, maxneighbors)
+      # determine bounded search method
+      bsearcher = searcher_ui(pdomain,
+                              varparams.maxneighbors,
+                              varparams.distance,
+                              varparams.neighborhood)
 
       # determine data mappings
       vmappings = if hasdata(problem)
         map(pdata, pdomain, (var,), varparams.mapping)[var]
       else
-        Dict()
+        Dict{Int,Int}()
       end
 
       # save preprocessed input

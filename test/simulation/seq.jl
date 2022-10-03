@@ -1,5 +1,4 @@
 @testset "SeqSim" begin
-  Random.seed!(1234)
   sdata = georef((z=[1.,0.,1.],), [(25.,25.), (50.,75.), (75.,50.)])
   sgrid = CartesianGrid(100,100)
 
@@ -7,11 +6,8 @@
   prob2 = SimulationProblem(sdata, sgrid, :z, 3)
 
   rng = MersenneTwister(123)
-  solver = SeqSim(:z => (estimator=DummyEstimator(),
-                         neighborhood=MetricBall(10.),
-                         minneighbors=1, maxneighbors=10,
-                         marginal=Normal(), path=RandomPath(),
-                         mapping=NearestMapping()), rng=rng)
+  solver = SeqSim(:z => (estimator=DummyEstimator(), marginal=Normal()),
+                  rng=rng)
 
   usol = solve(prob1, solver)
   csol = solve(prob2, solver)

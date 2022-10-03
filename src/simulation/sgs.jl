@@ -9,19 +9,13 @@ Sequential Gaussian simulation.
 
 ## Parameters
 
-* `variogram` - Variogram model (default to `GaussianVariogram()`)
-* `mean`      - Simple Kriging mean
-* `degree`    - Universal Kriging degree
-* `drifts`    - External Drift Kriging drift functions
-
-Latter options override former options. For example, by specifying
-`drifts`, the user is telling the algorithm to ignore `degree` and
-`mean`. If no option is specified, Ordinary Kriging is used by
-default with the `variogram` only.
-
-* `neighborhood` - Neighborhood on which to search neighbors
-* `maxneighbors` - Maximum number of neighbors (default to 10)
+* `variogram`    - Variogram model (default to `GaussianVariogram()`)
+* `mean`         - mean for simple Kriging (default to `0.0`)
 * `path`         - Simulation path (default to `LinearPath()`)
+* `minneighbors` - Minimum number of neighbors (default to `1`)
+* `maxneighbors` - Maximum number of neighbors (default to `10`)
+* `neighborhood` - Search neighborhood (default to `nothing`)
+* `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
 * `mapping`      - Data mapping method (default to `NearestMapping()`)
 
 For each location in the simulation `path`, a maximum number of
@@ -39,13 +33,12 @@ The neighbors are searched according to a `neighborhood`.
 """
 @simsolver SGS begin
   @param variogram = GaussianVariogram()
-  @param mean = nothing
-  @param degree = nothing
-  @param drifts = nothing
-  @param neighborhood
+  @param mean = 0.0
+  @param path = LinearPath()
   @param minneighbors = 1
   @param maxneighbors = 10
-  @param path = nothing
+  @param neighborhood = nothing
+  @param distance = Euclidean()
   @param mapping = NearestMapping()
   @global rng = Random.GLOBAL_RNG
 end
@@ -60,22 +53,16 @@ function preprocess(problem::SimulationProblem, solver::SGS)
       # get user parameters
       varparams = covars.params[(var,)]
 
-      # determine which Kriging variant to use
-      if varparams.drifts ≠ nothing
-        estimator = ExternalDriftKriging(varparams.variogram, varparams.drifts)
-      elseif varparams.degree ≠ nothing
-        estimator = UniversalKriging(varparams.variogram, varparams.degree, embeddim(pdomain))
-      elseif varparams.mean ≠ nothing
-        estimator = SimpleKriging(varparams.variogram, varparams.mean)
-      else
-        estimator = OrdinaryKriging(varparams.variogram)
-      end
+      # determine simple Kriging estimator
+      estimator = SimpleKriging(varparams.variogram, varparams.mean)
 
       # determine marginal distribution
-      marginal = Normal()
+      μ = varparams.mean
+      σ = √sill(varparams.variogram)
+      marginal = Normal(μ, σ)
 
       # determine simulation path
-      path = varparams.path ≠ nothing ? varparams.path : RandomPath()
+      path = isnothing(varparams.path) ? RandomPath() : varparams.path
 
       # determine data mapping
       mapping = varparams.mapping
