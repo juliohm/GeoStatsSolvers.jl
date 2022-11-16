@@ -22,16 +22,12 @@ using a learning model `𝓂`.
 function learn(𝒯::LearningTask, 𝒟, 𝓂)
   # retrieve table of values
   table = values(𝒟)
+  cols  = Tables.columns(table)
 
   # learn model with table
-  if issupervised(𝒯)
-    X = table |> Select(features(𝒯))
-    y = Tables.getcolumn(table, label(𝒯))
-    θ, _, __ = MI.fit(𝓂, 0, X, y)
-  else
-    X = table |> Select(features(𝒯))
-    θ, _, __ = MI.fit(𝓂, 0, X)
-  end
+  X = table |> Select(features(𝒯))
+  y = Tables.getcolumn(cols, label(𝒯))
+  θ, _, __ = MI.fit(𝓂, 0, X, y)
 
   # return learned model
   LearnedModel(𝓂, θ)
@@ -52,20 +48,11 @@ function perform(𝒯::LearningTask, 𝒟, 𝓂̂)
 
   # apply model to the data
   X = table |> Select(features(𝒯))
-  ŷ = MI.predict(𝓂, θ, X)
-
-  # post-process result
-  var = outputvars(𝒯)[1]
-  val = if issupervised(𝒯)
-    isprobabilistic(𝓂) ? mode.(ŷ) : ŷ
+  ŷ = if isprobabilistic(𝓂)
+    MI.predict_mode(𝓂, θ, X)
   else
-    ŷ
+    MI.predict(𝓂, θ, X)
   end
 
-  ctor = constructor(typeof(𝒟))
-  dom  = domain(𝒟)
-  tab  = (; var=>val)
-  dat  = Dict(paramdim(dom) => tab)
-
-  ctor(dom, dat)
+  georef((; label(𝒯) => ŷ), domain(𝒟))
 end
