@@ -81,7 +81,7 @@
 
   # basic checks
   inds = LinearIndices(size(grid2D))
-  S = solution[:z]
+  S = solution.z
   @test isapprox(S[inds[25,25]], 1., atol=1e-3)
   @test isapprox(S[inds[50,75]], 0., atol=1e-3)
   @test isapprox(S[inds[75,50]], 1., atol=1e-3)
@@ -107,7 +107,7 @@
   solution = solve(problem, solver)
 
   inds = LinearIndices(size(grid))
-  S = solution[:z]
+  S = solution.z
 
   # basic checks
   @test aitchison(S[inds[25,25]], Composition(0.1,0.2)) < 1e-3

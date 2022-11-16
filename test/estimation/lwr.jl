@@ -13,8 +13,8 @@
 
   solution = solve(problem, solver)
 
-  yhat = solution[:y]
-  yvar = solution[:y_variance]
+  yhat = solution.y
+  yvar = solution.y_variance
 
   if visualtests
     plt = scatter(x, y, label="data", size=(1000,400))

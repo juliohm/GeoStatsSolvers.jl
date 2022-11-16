@@ -42,8 +42,9 @@ function solve(problem::EstimationProblem, solver::IDW)
       V = mactypeof[var]
 
       # retrieve non-missing data
-      locs = findall(!ismissing, pdata[var])
-      𝒟 = view(pdata, locs)
+      locs = findall(!ismissing, getproperty(pdata, var))
+      𝒮 = view(pdata, locs)
+      𝒟 = domain(𝒮)
       n = nelements(𝒟)
 
       # determine number of nearest neighbors to use
@@ -62,7 +63,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       @assert p > 0 "power must be positive"
 
       # fit search tree
-      X = [coordinates(centroid(𝒟, i)) for i in 1:nelements(𝒟)]
+      X = [coordinates(centroid(𝒟, i)) for i in 1:n]
       if D isa NearestNeighbors.MinkowskiMetric
         tree = KDTree(X, D)
       else
@@ -70,7 +71,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       end
 
       # lookup non-missing values
-      z = 𝒟[var]
+      z = getproperty(𝒮, var)
 
       # estimation loop
       locations = traverse(pdomain, LinearPath())

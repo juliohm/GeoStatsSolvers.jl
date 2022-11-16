@@ -91,19 +91,16 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
       # check stationarity
       @assert isstationary(γ) "variogram model must be stationary"
 
-      # determine data mappings
-      vmapping = if hasdata(problem)
-        map(pdata, pdomain, (var,), varparams.mapping)[var]
-      else
-        Dict()
-      end
-
-      # retrieve data locations in domain and data values
-      dlocs = Int[]
+      # retrieve data values and data locations in domain
       z₁ = V[]
-      for (loc, dloc) in vmapping
-        push!(dlocs, loc)
-        push!(z₁, pdata[var][dloc])
+      dlocs = Int[]
+      if hasdata(problem)
+        vals = getproperty(pdata, var)
+        maps = map(pdata, pdomain, (var,), varparams.mapping)[var]
+        for (loc, dloc) in maps
+          push!(z₁, vals[dloc])
+          push!(dlocs, loc)
+        end
       end
 
       # retrieve simulation locations

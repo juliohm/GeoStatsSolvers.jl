@@ -42,7 +42,7 @@
   solution = solve(problem, solver)
 
   inds = LinearIndices(size(grid))
-  S = solution[:z]
+  S = solution.z
 
   # basic checks
   @test aitchison(S[inds[25,25]], Composition(0.1,0.2)) < 1e-2

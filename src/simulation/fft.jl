@@ -106,7 +106,8 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
               neighborhood = varparams.neighborhood,
               distance     = varparams.distance
           ))
-          z̄ = solve(prob, krig)[var]
+          ksol = solve(prob, krig)
+          z̄ = getproperty(ksol, var)
 
           # find data locations in problem domain
           ndata    = nelements(ddomain)
@@ -168,7 +169,8 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
       kdat = georef(dtable, centroid.(ddomain))
       kdom = PointSet(centroid.(pdomain))
       prob = EstimationProblem(kdat, kdom, var)
-      z̄ᵤ   = solve(prob, krig)[var]
+      ksol = solve(prob, krig)
+      z̄ᵤ   = getproperty(ksol, var)
 
       # add residual field
       z̄ .+ (zᵤ .- z̄ᵤ)

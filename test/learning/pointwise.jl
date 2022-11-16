@@ -13,7 +13,7 @@
   T = georef((X=X+ϵ₁,Y=Y+ϵ₂))
 
   # view versions
-  inds = shuffle(rng, 1:nelements(S))
+  inds = shuffle(rng, 1:nitems(S))
   Sv = view(S, inds)
   Tv = view(T, inds)
 
@@ -31,8 +31,8 @@
   R₂ = solve(𝒫₂, ℒ)
 
   # error is small
-  @test mean(S[:Z] .!= R₁[:Z]) < 0.15
-  @test mean(Sv[:Z] .!= R₂[:Z]) < 0.15
+  @test mean(S.Z .!= R₁.Z) < 0.15
+  @test mean(Sv.Z .!= R₂.Z) < 0.15
 
   if visualtests
     for (i,s) in enumerate([(S,R₁), (Sv,R₂)])

@@ -112,9 +112,12 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
 
     # keep track of simulated locations
     simulated = falses(nelements(pdomain))
-    for (loc, datloc) in mappings
-      realization[loc] = pdata[var][datloc]
-      simulated[loc] = true
+    if hasdata(problem)
+      vals = getproperty(pdata, var)
+      for (loc, datloc) in mappings
+        realization[loc] = vals[datloc]
+        simulated[loc] = true
+      end
     end
 
     # simulation loop
