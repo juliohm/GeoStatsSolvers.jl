@@ -27,7 +27,8 @@ function learn(𝒯::LearningTask, 𝒟, 𝓂)
   # learn model with table
   X = table |> Select(features(𝒯))
   y = Tables.getcolumn(cols, label(𝒯))
-  θ, _, __ = MI.fit(𝓂, 0, X, y)
+  R = MI.reformat(𝓂, X, y)
+  θ, _, __ = MI.fit(𝓂, 0, R...)
 
   # return learned model
   LearnedModel(𝓂, θ)
@@ -48,10 +49,11 @@ function perform(𝒯::LearningTask, 𝒟, 𝓂̂)
 
   # apply model to the data
   X = table |> Select(features(𝒯))
+  R = MI.reformat(𝓂, X)
   ŷ = if isprobabilistic(𝓂)
-    MI.predict_mode(𝓂, θ, X)
+    MI.predict_mode(𝓂, θ, R...)
   else
-    MI.predict(𝓂, θ, X)
+    MI.predict(𝓂, θ, R...)
   end
 
   georef((; label(𝒯) => ŷ), domain(𝒟))
