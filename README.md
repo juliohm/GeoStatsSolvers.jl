@@ -81,7 +81,7 @@ the center of the neighborhood by sampling from this distribution.
 #### SPDEGS
 
 This solver provides an implementation of the stochastic partial differential equations
-(SPDE) approach to Gaussian simulation [Lindgren et al. 2011.](https://rss.onlinelibrary.wiley.com/doi/10.1111/j.1467-9868.2011.00777.x).
+(SPDE) approach to Gaussian simulation [Lindgren et al. 2011](https://rss.onlinelibrary.wiley.com/doi/10.1111/j.1467-9868.2011.00777.x).
 The method relies on a discretization of the Laplace-Beltrami operator on meshes and is
 adequate for highly curved domains (e.g. surfaces).
 
