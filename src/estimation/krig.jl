@@ -131,7 +131,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
 end
 
 function solve(problem::EstimationProblem, solver::Kriging)
-  # retrive problem info
+  # retrieve problem info
   pdomain = domain(problem)
 
   # preprocess user input
