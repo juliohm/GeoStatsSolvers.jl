@@ -3,10 +3,10 @@
 # ------------------------------------------------------------------
 
 """
-    LearnedModel(𝓂, θ)
+    LearnedModel(model, theta)
 
-An object that stores a learning model `m`
-along with its learned parameters `θ`.
+An object that stores a learning `model`
+along with its learned parameters `theta`.
 """
 struct LearnedModel{ℳ,Θ}
   𝓂::ℳ
@@ -14,10 +14,11 @@ struct LearnedModel{ℳ,Θ}
 end
 
 """
-    learn(𝒯, 𝒟, 𝓂)
+    learn(task, data, model)
 
-Learn the task `𝒯` with geospatial data `𝒟`
-using a learning model `𝓂`.
+Learn the `task` with geospatial `data`
+using a learning `model` from MLJ.jl and
+returns a *learned* model.
 """
 function learn(𝒯::LearningTask, 𝒟, 𝓂)
   # retrieve table of values
@@ -35,10 +36,11 @@ function learn(𝒯::LearningTask, 𝒟, 𝓂)
 end
 
 """
-    perform(𝒯, 𝒟, 𝓂̂)
+    perform(task, data, lmodel)
 
-Perform the task `𝒯` with geospatial data `𝒟` using
-a *learned* model `𝓂̂`.
+Perform the `task` with geospatial `data`
+using a *learned* model `lmodel` obtained
+from a previous [`learn`](@ref) call.
 """
 function perform(𝒯::LearningTask, 𝒟, 𝓂̂)
   # unpack model and learned parameters
