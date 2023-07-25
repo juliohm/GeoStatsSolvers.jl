@@ -109,7 +109,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       varσ = last.(predictions)
 
       push!(μs, var => urevert(unit, varμ))
-      push!(σs, Symbol(var, "_variance") => varσ)
+      push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
     end
   end
 

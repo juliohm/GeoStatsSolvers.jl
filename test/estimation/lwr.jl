@@ -70,4 +70,5 @@
   problem = EstimationProblem(geodata, domain, :variable)
   solution = solve(problem, LWR())
   @test unit(eltype(solution.variable)) == u"°C"
+  @test unit(eltype(solution.variable_variance)) == u"K^2"
 end

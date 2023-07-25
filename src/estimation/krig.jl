@@ -165,7 +165,7 @@ function solve(problem::EstimationProblem, solver::Kriging)
 
     unit = preproc[var].unit
     push!(μs, var => urevert(unit, varμ))
-    push!(σs, Symbol(var, "_variance") => varσ)
+    push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
   end
 
   georef((; μs..., σs...), pdomain)
