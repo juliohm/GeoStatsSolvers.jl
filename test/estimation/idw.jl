@@ -31,7 +31,6 @@
   problem = EstimationProblem(geodata, domain, :variable)
   solution = solve(problem, IDW())
   @test unit(eltype(solution.variable)) == u"°C"
-  @test unit(eltype(solution.variable_distance)) == u"K^2"
 
   # -------------------
   # COMPOSITIONAL DATA

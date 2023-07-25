@@ -107,7 +107,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       varσ = last.(predictions)
 
       push!(μs, var => urevert(unit, varμ))
-      push!(σs, Symbol(var, "_distance") => varσ * absoluteunit(unit)^2)
+      push!(σs, Symbol(var, "_distance") => varσ)
     end
   end
 
