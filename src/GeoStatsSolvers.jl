@@ -10,13 +10,13 @@ using Variography
 using KrigingEstimators
 
 using Tables
-using Unitful
-using Unitful: Units, AffineUnits
 using Distributions
 using TableTransforms
 using NearestNeighbors
 using Distances: Euclidean
 using Bessels: gamma
+using Unitful: Units, AffineUnits
+using Unitful
 using CpuId
 using FFTW
 

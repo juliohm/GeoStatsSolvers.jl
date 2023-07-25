@@ -88,12 +88,12 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
 
       # adjust unit
       cols = Tables.columns(dtable)
-      temp = Tables.getcolumn(cols, var)
-      unit = elunit(temp)
-      vals = uadjust(unit, temp)
+      vals = Tables.getcolumn(cols, var)
+      unit = elunit(vals)
+      z = uadjust(unit, vals)
 
       # find non-missing samples for variable
-      inds = findall(!ismissing, vals)
+      inds = findall(!ismissing, z)
 
       # assert at least one sample is non-missing
       if isempty(inds)
@@ -101,7 +101,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       end
 
       # subset of non-missing samples
-      vtable  = (;var => collect(skipmissing(vals)))
+      vtable  = (;var => collect(skipmissing(z)))
       vdomain = view(ddomain, inds)
       samples = georef(vtable, vdomain)
 

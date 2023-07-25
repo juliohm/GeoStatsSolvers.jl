@@ -76,10 +76,10 @@ function solve(problem::EstimationProblem, solver::IDW)
 
       # adjust unit
       cols = Tables.columns(𝒯)
-      temp = Tables.getcolumn(cols, var)
-      unit = elunit(temp)
+      vals = Tables.getcolumn(cols, var)
+      unit = elunit(vals)
       # lookup non-missing values
-      z = uadjust(unit, temp)
+      z = uadjust(unit, vals)
 
       # estimation loop
       locations = traverse(pdomain, LinearPath())
