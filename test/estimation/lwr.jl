@@ -63,4 +63,11 @@
   if visualtests
     @test_reference "data/lwr-haversine.png" contourf(solution, size=(900,250))
   end
+
+  # affine units
+  geodata = georef((; variable=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
+  domain = CartesianGrid(5, 5)
+  problem = EstimationProblem(geodata, domain, :variable)
+  solution = solve(problem, LWR())
+  @test unit(eltype(solution.variable)) == u"°C"
 end

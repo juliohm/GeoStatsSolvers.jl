@@ -11,6 +11,7 @@ using KrigingEstimators
 
 using Tables
 using Unitful
+using Unitful: Units, AffineUnits
 using Distributions
 using TableTransforms
 using NearestNeighbors

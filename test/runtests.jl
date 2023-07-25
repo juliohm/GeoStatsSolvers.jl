@@ -5,6 +5,7 @@ using Variography
 using Distances
 using Distributions
 using CategoricalArrays
+using Unitful
 using CoDa
 using LinearAlgebra
 using Plots; gr(size=(600,400))

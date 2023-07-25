@@ -90,6 +90,13 @@
     @test_reference "data/krig-2D-local.png" contourf(solution, size=(800,400))
   end
 
+  # affine units
+  geodata = georef((; variable=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
+  domain = CartesianGrid(5, 5)
+  problem = EstimationProblem(geodata, domain, :variable)
+  solution = solve(problem, Kriging())
+  @test unit(eltype(solution.variable)) == u"°C"
+
   # -------------------
   # COMPOSITIONAL DATA
   # -------------------

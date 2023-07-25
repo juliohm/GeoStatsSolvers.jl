@@ -43,13 +43,8 @@ function solve(problem::EstimationProblem, solver::LWR)
       # determine value type
       V = mactypeof[var]
 
-      # adjust unit
-      temp = getproperty(pdata, var)
-      unit = elunit(temp)
-      vals = uadjust(unit, temp)
-
       # retrieve non-missing data
-      locs = findall(!ismissing, vals)
+      locs = findall(!ismissing, getproperty(pdata, var))
       𝒮 = view(pdata, locs)
       𝒟 = domain(𝒮)
       n = nelements(𝒟)
@@ -75,15 +70,15 @@ function solve(problem::EstimationProblem, solver::LWR)
         tree = BallTree(X, D)
       end
 
+      # adjust unit
+      temp = getproperty(𝒮, var)
+      unit = elunit(temp)
       # lookup non-missing values
-      z = getproperty(𝒮, var)
-
-      # pre-allocate memory for results
-      varμ = Vector{V}(undef, nelements(pdomain))
-      varσ = Vector{V}(undef, nelements(pdomain))
+      z = uadjust(unit, temp)
 
       # estimation loop
-      for loc in traverse(pdomain, LinearPath())
+      locations = traverse(pdomain, LinearPath())
+      predictions = map(locations) do loc
         x = coordinates(centroid(pdomain, loc))
 
         # find neighbors
@@ -102,12 +97,14 @@ function solve(problem::EstimationProblem, solver::LWR)
         rₗ = Wₗ*Xₗ*(Xₗ'*Wₗ*Xₗ\xₒ)
         r̂ₒ = norm(rₗ)
 
-        varμ[loc] = ẑₒ
-        varσ[loc] = r̂ₒ
+        ẑₒ, r̂ₒ
       end
 
+      varμ = first.(predictions)
+      varσ = last.(predictions)
+
       push!(μs, var => urevert(unit, varμ))
-      push!(σs, Symbol(var, "_variance") => urevert(unit, varσ))
+      push!(σs, Symbol(var, "_variance") => varσ)
     end
   end
 
