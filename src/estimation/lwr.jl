@@ -28,6 +28,7 @@ end
 function solve(problem::EstimationProblem, solver::LWR)
   # retrieve problem info
   pdata = data(problem)
+  dtable = values(pdata)
   pdomain = domain(problem)
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
@@ -44,9 +45,12 @@ function solve(problem::EstimationProblem, solver::LWR)
       V = mactypeof[var]
 
       # retrieve non-missing data
-      locs = findall(!ismissing, getproperty(pdata, var))
+      dcols = Tables.columns(dtable)
+      dvals = Tables.getcolumn(dcols, var)
+      locs = findall(!ismissing, dvals)
       𝒮 = view(pdata, locs)
       𝒟 = domain(𝒮)
+      𝒯 = values(𝒮)
       n = nelements(𝒟)
 
       # determine number of nearest neighbors to use
@@ -71,7 +75,8 @@ function solve(problem::EstimationProblem, solver::LWR)
       end
 
       # adjust unit
-      temp = getproperty(𝒮, var)
+      cols = Tables.columns(𝒯)
+      temp = Tables.getcolumn(cols, var)
       unit = elunit(temp)
       # lookup non-missing values
       z = uadjust(unit, temp)
