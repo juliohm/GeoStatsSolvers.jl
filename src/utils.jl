@@ -7,6 +7,3 @@ function uadjust(U::AffineUnits, x)
   A = absoluteunit(U)
   uconvert.(A, x)
 end
-
-urevert(::Units, x) = x
-urevert(U::AffineUnits, x) = uconvert.(U, x)

@@ -77,8 +77,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       # adjust unit
       cols = Tables.columns(𝒯)
       vals = Tables.getcolumn(cols, var)
-      unit = elunit(vals)
-      z = uadjust(unit, vals)
+      z = uadjust(elunit(vals), vals)
 
       # estimation loop
       inds = traverse(pdomain, LinearPath())
@@ -105,7 +104,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       varμ = first.(pred)
       varσ = last.(pred)
 
-      push!(μs, var => urevert(unit, varμ))
+      push!(μs, var => varμ)
       push!(σs, Symbol(var, "_distance") => varσ)
     end
   end

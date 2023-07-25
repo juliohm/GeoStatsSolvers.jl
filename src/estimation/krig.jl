@@ -164,7 +164,7 @@ function solve(problem::EstimationProblem, solver::Kriging)
     end
 
     unit = preproc[var].unit
-    push!(μs, var => urevert(unit, varμ))
+    push!(μs, var => varμ)
     push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
   end
 

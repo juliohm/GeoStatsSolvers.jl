@@ -30,7 +30,7 @@
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :variable)
   solution = solve(problem, IDW())
-  @test unit(eltype(solution.variable)) == u"°C"
+  @test unit(eltype(solution.variable)) == u"K"
 
   # -------------------
   # COMPOSITIONAL DATA
