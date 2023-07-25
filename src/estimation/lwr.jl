@@ -78,7 +78,6 @@ function solve(problem::EstimationProblem, solver::LWR)
       cols = Tables.columns(𝒯)
       vals = Tables.getcolumn(cols, var)
       unit = elunit(vals)
-      # lookup non-missing values
       z = uadjust(unit, vals)
 
       # estimation loop
