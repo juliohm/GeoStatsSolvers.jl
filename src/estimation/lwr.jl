@@ -47,8 +47,8 @@ function solve(problem::EstimationProblem, solver::LWR)
       # retrieve non-missing data
       dcols = Tables.columns(dtable)
       dvals = Tables.getcolumn(dcols, var)
-      locs = findall(!ismissing, dvals)
-      𝒮 = view(pdata, locs)
+      dinds = findall(!ismissing, dvals)
+      𝒮 = view(pdata, dinds)
       𝒟 = domain(𝒮)
       𝒯 = values(𝒮)
       n = nelements(𝒟)
@@ -81,9 +81,9 @@ function solve(problem::EstimationProblem, solver::LWR)
       z = uadjust(unit, vals)
 
       # estimation loop
-      locations = traverse(pdomain, LinearPath())
-      predictions = map(locations) do loc
-        x = coordinates(centroid(pdomain, loc))
+      inds = traverse(pdomain, LinearPath())
+      pred = map(inds) do ind
+        x = coordinates(centroid(pdomain, ind))
 
         # find neighbors
         is, ds = knn(tree, x, k)
@@ -104,8 +104,8 @@ function solve(problem::EstimationProblem, solver::LWR)
         ẑₒ, r̂ₒ
       end
 
-      varμ = first.(predictions)
-      varσ = last.(predictions)
+      varμ = first.(pred)
+      varσ = last.(pred)
 
       push!(μs, var => urevert(unit, varμ))
       push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
