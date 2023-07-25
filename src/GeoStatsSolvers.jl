@@ -10,6 +10,7 @@ using Variography
 using KrigingEstimators
 
 using Tables
+using Unitful
 using Distributions
 using TableTransforms
 using NearestNeighbors
@@ -27,6 +28,8 @@ import MLJModelInterface
 const MI = MLJModelInterface
 
 import GeoStatsBase: preprocess, solve, solvesingle
+
+include("utils.jl")
 
 include("estimation/idw.jl")
 include("estimation/lwr.jl")

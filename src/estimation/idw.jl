@@ -41,8 +41,13 @@ function solve(problem::EstimationProblem, solver::IDW)
       # determine value type
       V = mactypeof[var]
 
+      # adjust unit
+      temp = getproperty(pdata, var)
+      unit = elunit(temp)
+      vals = uadjust(unit, temp)
+
       # retrieve non-missing data
-      locs = findall(!ismissing, getproperty(pdata, var))
+      locs = findall(!ismissing, vals)
       𝒮 = view(pdata, locs)
       𝒟 = domain(𝒮)
       n = nelements(𝒟)
@@ -98,8 +103,8 @@ function solve(problem::EstimationProblem, solver::IDW)
       varμ = first.(predictions)
       varσ = last.(predictions)
 
-      push!(μs, var => varμ)
-      push!(σs, Symbol(var,"_distance") => varσ)
+      push!(μs, var => urevert(unit, varμ))
+      push!(σs, Symbol(var, "_distance") => urevert(unit, varσ))
     end
   end
 

@@ -43,8 +43,13 @@ function solve(problem::EstimationProblem, solver::LWR)
       # determine value type
       V = mactypeof[var]
 
+      # adjust unit
+      temp = getproperty(pdata, var)
+      unit = elunit(temp)
+      vals = uadjust(unit, temp)
+
       # retrieve non-missing data
-      locs = findall(!ismissing, getproperty(pdata, var))
+      locs = findall(!ismissing, vals)
       𝒮 = view(pdata, locs)
       𝒟 = domain(𝒮)
       n = nelements(𝒟)
@@ -101,8 +106,8 @@ function solve(problem::EstimationProblem, solver::LWR)
         varσ[loc] = r̂ₒ
       end
 
-      push!(μs, var => varμ)
-      push!(σs, Symbol(var,"_variance") => varσ)
+      push!(μs, var => urevert(unit, varμ))
+      push!(σs, Symbol(var, "_variance") => urevert(unit, varσ))
     end
   end
 
