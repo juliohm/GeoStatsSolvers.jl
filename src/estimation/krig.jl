@@ -89,8 +89,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       # adjust unit
       cols = Tables.columns(dtable)
       vals = Tables.getcolumn(cols, var)
-      unit = elunit(vals)
-      z = uadjust(unit, vals)
+      z = uadjust(vals)
 
       # find non-missing samples for variable
       inds = findall(!ismissing, z)
@@ -127,8 +126,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
                       estimator=estimator,
                       minneighbors=minneighbors,
                       maxneighbors=maxneighbors,
-                      bsearcher=bsearcher,
-                      unit=unit)
+                      bsearcher=bsearcher)
     end
   end
 
@@ -163,9 +161,8 @@ function solve(problem::EstimationProblem, solver::Kriging)
       varμ, varσ = approxsolve(prob, var, preproc)
     end
 
-    unit = preproc[var].unit
     push!(μs, var => varμ)
-    push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
+    push!(σs, Symbol(var, "_variance") => varσ * elunit(varμ)^2)
   end
 
   georef((; μs..., σs...), pdomain)

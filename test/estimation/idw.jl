@@ -25,12 +25,19 @@
     @test_reference "data/idw-haversine.png" contourf(solution,size=(800,200))
   end
 
-  # affine units
-  geodata = georef((; variable=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
+  # units
+  geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
-  problem = EstimationProblem(geodata, domain, :variable)
+  problem = EstimationProblem(geodata, domain, :T)
   solution = solve(problem, IDW())
-  @test unit(eltype(solution.variable)) == u"K"
+  @test GeoStatsSolvers.elunit(solution.T) == u"K"
+
+  # affine units
+  geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
+  domain = CartesianGrid(5, 5)
+  problem = EstimationProblem(geodata, domain, :T)
+  solution = solve(problem, IDW())
+  @test GeoStatsSolvers.elunit(solution.T) == u"K"
 
   # -------------------
   # COMPOSITIONAL DATA

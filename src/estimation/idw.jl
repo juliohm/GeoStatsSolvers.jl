@@ -77,7 +77,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       # adjust unit
       cols = Tables.columns(𝒯)
       vals = Tables.getcolumn(cols, var)
-      z = uadjust(elunit(vals), vals)
+      z = uadjust(vals)
 
       # estimation loop
       inds = traverse(pdomain, LinearPath())

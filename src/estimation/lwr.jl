@@ -77,8 +77,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       # adjust unit
       cols = Tables.columns(𝒯)
       vals = Tables.getcolumn(cols, var)
-      unit = elunit(vals)
-      z = uadjust(unit, vals)
+      z = uadjust(vals)
 
       # estimation loop
       inds = traverse(pdomain, LinearPath())
@@ -108,7 +107,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       varσ = last.(pred)
 
       push!(μs, var => varμ)
-      push!(σs, Symbol(var, "_variance") => varσ * absoluteunit(unit)^2)
+      push!(σs, Symbol(var, "_variance") => varσ * elunit(varμ)^2)
     end
   end
 
