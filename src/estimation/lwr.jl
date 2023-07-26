@@ -28,6 +28,7 @@ end
 function solve(problem::EstimationProblem, solver::LWR)
   # retrieve problem info
   pdata = data(problem)
+  dtable = values(pdata)
   pdomain = domain(problem)
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
@@ -44,9 +45,12 @@ function solve(problem::EstimationProblem, solver::LWR)
       V = mactypeof[var]
 
       # retrieve non-missing data
-      locs = findall(!ismissing, getproperty(pdata, var))
-      𝒮 = view(pdata, locs)
+      dcols = Tables.columns(dtable)
+      dvals = Tables.getcolumn(dcols, var)
+      dinds = findall(!ismissing, dvals)
+      𝒮 = view(pdata, dinds)
       𝒟 = domain(𝒮)
+      𝒯 = values(𝒮)
       n = nelements(𝒟)
 
       # determine number of nearest neighbors to use
@@ -70,16 +74,15 @@ function solve(problem::EstimationProblem, solver::LWR)
         tree = BallTree(X, D)
       end
 
-      # lookup non-missing values
-      z = getproperty(𝒮, var)
-
-      # pre-allocate memory for results
-      varμ = Vector{V}(undef, nelements(pdomain))
-      varσ = Vector{V}(undef, nelements(pdomain))
+      # adjust unit
+      cols = Tables.columns(𝒯)
+      vals = Tables.getcolumn(cols, var)
+      z = uadjust(vals)
 
       # estimation loop
-      for loc in traverse(pdomain, LinearPath())
-        x = coordinates(centroid(pdomain, loc))
+      inds = traverse(pdomain, LinearPath())
+      pred = map(inds) do ind
+        x = coordinates(centroid(pdomain, ind))
 
         # find neighbors
         is, ds = knn(tree, x, k)
@@ -97,12 +100,14 @@ function solve(problem::EstimationProblem, solver::LWR)
         rₗ = Wₗ*Xₗ*(Xₗ'*Wₗ*Xₗ\xₒ)
         r̂ₒ = norm(rₗ)
 
-        varμ[loc] = ẑₒ
-        varσ[loc] = r̂ₒ
+        ẑₒ, r̂ₒ
       end
 
+      varμ = first.(pred)
+      varσ = last.(pred)
+
       push!(μs, var => varμ)
-      push!(σs, Symbol(var,"_variance") => varσ)
+      push!(σs, Symbol(var, "_variance") => varσ * elunit(varμ)^2)
     end
   end
 

@@ -15,6 +15,8 @@ using TableTransforms
 using NearestNeighbors
 using Distances: Euclidean
 using Bessels: gamma
+using Unitful: Units, AffineUnits
+using Unitful
 using CpuId
 using FFTW
 
@@ -27,6 +29,8 @@ import MLJModelInterface
 const MI = MLJModelInterface
 
 import GeoStatsBase: preprocess, solve, solvesingle
+
+include("utils.jl")
 
 include("estimation/idw.jl")
 include("estimation/lwr.jl")

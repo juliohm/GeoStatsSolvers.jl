@@ -26,6 +26,7 @@ end
 function solve(problem::EstimationProblem, solver::IDW)
   # retrieve problem info
   pdata = data(problem)
+  dtable = values(pdata)
   pdomain = domain(problem)
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
@@ -42,9 +43,12 @@ function solve(problem::EstimationProblem, solver::IDW)
       V = mactypeof[var]
 
       # retrieve non-missing data
-      locs = findall(!ismissing, getproperty(pdata, var))
-      𝒮 = view(pdata, locs)
+      dcols = Tables.columns(dtable)
+      dvals = Tables.getcolumn(dcols, var)
+      dinds = findall(!ismissing, dvals)
+      𝒮 = view(pdata, dinds)
       𝒟 = domain(𝒮)
+      𝒯 = values(𝒮)
       n = nelements(𝒟)
 
       # determine number of nearest neighbors to use
@@ -70,13 +74,15 @@ function solve(problem::EstimationProblem, solver::IDW)
         tree = BallTree(X, D)
       end
 
-      # lookup non-missing values
-      z = getproperty(𝒮, var)
+      # adjust unit
+      cols = Tables.columns(𝒯)
+      vals = Tables.getcolumn(cols, var)
+      z = uadjust(vals)
 
       # estimation loop
-      locations = traverse(pdomain, LinearPath())
-      predictions = map(locations) do loc
-        x = coordinates(centroid(pdomain, loc))
+      inds = traverse(pdomain, LinearPath())
+      pred = map(inds) do ind
+        x = coordinates(centroid(pdomain, ind))
         is, ds = knn(tree, x, k)
         ws = 1 ./ ds.^p
         Σw = sum(ws)
@@ -95,11 +101,11 @@ function solve(problem::EstimationProblem, solver::IDW)
         μ, σ
       end
   
-      varμ = first.(predictions)
-      varσ = last.(predictions)
+      varμ = first.(pred)
+      varσ = last.(pred)
 
       push!(μs, var => varμ)
-      push!(σs, Symbol(var,"_distance") => varσ)
+      push!(σs, Symbol(var, "_distance") => varσ)
     end
   end
 
