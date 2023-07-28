@@ -8,8 +8,4 @@
 
   Random.seed!(1234)
   solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/COOKIE.png" plot(solution)
-  end
 end

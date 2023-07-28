@@ -7,24 +7,9 @@ using Distributions
 using CategoricalArrays
 using Unitful
 using CoDa
-using LinearAlgebra
-using Plots; gr(size=(600,400))
-using GeoStatsPlots # TODO: replace by GeoStatsViz
-using ReferenceTests, ImageIO
-using Test, Random
-
-# learning models from MLJ
 using MLJ: @load
-dtree = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
-
-# workaround GR warnings
-ENV["GKSwstype"] = "100"
-
-# environment settings
-isCI = "CI" ∈ keys(ENV)
-islinux = Sys.islinux()
-visualtests = !isCI || (isCI && islinux)
-datadir = joinpath(@__DIR__,"data")
+using LinearAlgebra
+using Test, Random
 
 # dummy definitions
 include("dummy.jl")

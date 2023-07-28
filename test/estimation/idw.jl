@@ -1,43 +1,35 @@
 @testset "IDW" begin
   # basic problem
-  geodata = georef((variable=[1.,0.,1.],), [25. 50. 75.;  25. 75. 50.])
+  geodata = georef((z=[1.,0.,1.],), [25. 50. 75.;  25. 75. 50.])
   domain  = CartesianGrid(100,100)
-  problem = EstimationProblem(geodata, domain, :variable)
+  problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:variable => (neighbors=3,))
+  solver = IDW(:z => (neighbors=3,))
 
-  solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/idw.png" contourf(solution,size=(800,400))
-  end
+  sol = solve(problem, solver)
 
   # haversine distance
-  geodata = georef((variable=[4.0,-1.0,3.0],), [50.0 100.0 200.0; -30.0 30.0 10.0])
+  geodata = georef((z=[4.0,-1.0,3.0],), [50.0 100.0 200.0; -30.0 30.0 10.0])
   domain  = CartesianGrid((1.0, -89.0), (359.0, 89.0), dims=(200, 100))
-  problem = EstimationProblem(geodata, domain, :variable)
+  problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:variable => (neighbors=3, distance=Haversine(1.0)))
+  solver = IDW(:z => (neighbors=3, distance=Haversine(1.0)))
 
-  solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/idw-haversine.png" contourf(solution,size=(800,200))
-  end
+  sol = solve(problem, solver)
 
   # units
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, IDW())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
+  sol = solve(problem, IDW())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
 
   # affine units
   geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, IDW())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
+  sol = solve(problem, IDW())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
 
   # -------------------
   # COMPOSITIONAL DATA
@@ -53,10 +45,10 @@
   solver = IDW()
 
   Random.seed!(2021)
-  solution = solve(problem, solver)
+  sol = solve(problem, solver)
 
   inds = LinearIndices(size(grid))
-  S = solution.z
+  S = sol.z
 
   # basic checks
   @test aitchison(S[inds[25,25]], Composition(0.1,0.2)) < 1e-2

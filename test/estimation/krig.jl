@@ -18,13 +18,6 @@
   solnames  = ["global", "nearest", "local"]
   solutions = [solve(problem, solver) for solver in solvers]
 
-  if visualtests
-    for i in 1:3
-      solution, sname = solutions[i], solnames[i]
-      @test_reference "data/krig-1D-$(sname).png" plot(solution, size=(600,200))
-    end
-  end
-
   # --------------------
   # 2D PROBLEM (GLOBAL)
   # --------------------
@@ -37,15 +30,11 @@
   solver = Kriging(:z => (variogram=GaussianVariogram(range=35.,nugget=0.),))
 
   Random.seed!(2021)
-  solution = solve(problem, solver)
-  Z = asarray(solution, :z)
+  sol = solve(problem, solver)
+  Z = asarray(sol, :z)
   @test isapprox(Z[25,25], 1., atol=1e-3)
   @test isapprox(Z[50,75], 0., atol=1e-3)
   @test isapprox(Z[75,50], 1., atol=1e-3)
-
-  if visualtests
-    @test_reference "data/krig-2D-global.png" contourf(solution, size=(800,400))
-  end
 
   # ---------------------
   # 2D PROBLEM (NEAREST)
@@ -57,15 +46,11 @@
                           maxneighbors=3))
 
   Random.seed!(2021)
-  solution = solve(problem, solver)
-  Z = asarray(solution, :z)
+  sol = solve(problem, solver)
+  Z = asarray(sol, :z)
   @test isapprox(Z[25,25], 1., atol=1e-3)
   @test isapprox(Z[50,75], 0., atol=1e-3)
   @test isapprox(Z[75,50], 1., atol=1e-3)
-
-  if visualtests
-    @test_reference "data/krig-2D-nearest.png" contourf(solution, size=(800,400))
-  end
 
   # -------------------
   # 2D PROBLEM (LOCAL)
@@ -77,34 +62,30 @@
                           maxneighbors=3, neighborhood=MetricBall(100.)))
 
   Random.seed!(2021)
-  solution = solve(problem, solver)
+  sol = solve(problem, solver)
 
   # basic checks
+  S = sol.z
   inds = LinearIndices(size(grid2D))
-  S = solution.z
   @test isapprox(S[inds[25,25]], 1., atol=1e-3)
   @test isapprox(S[inds[50,75]], 0., atol=1e-3)
   @test isapprox(S[inds[75,50]], 1., atol=1e-3)
-
-  if visualtests
-    @test_reference "data/krig-2D-local.png" contourf(solution, size=(800,400))
-  end
 
   # units
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, Kriging())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
-  @test GeoStatsSolvers.elunit(solution.T_variance) == u"K^2"
+  sol = solve(problem, Kriging())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
+  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 
   # affine units
   geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, Kriging())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
-  @test GeoStatsSolvers.elunit(solution.T_variance) == u"K^2"
+  sol = solve(problem, Kriging())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
+  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 
   # -------------------
   # COMPOSITIONAL DATA
@@ -120,12 +101,9 @@
   solver = Kriging(:z => (variogram=GaussianVariogram(range=35.),))
 
   Random.seed!(2021)
-  solution = solve(problem, solver)
-
+  sol = solve(problem, solver)
   inds = LinearIndices(size(grid))
-  S = solution.z
-
-  # basic checks
+  S = sol.z
   @test aitchison(S[inds[25,25]], Composition(0.1,0.2)) < 1e-3
   @test aitchison(S[inds[50,75]], Composition(0.3,0.4)) < 1e-3
   @test aitchison(S[inds[75,50]], Composition(0.5,0.6)) < 1e-3

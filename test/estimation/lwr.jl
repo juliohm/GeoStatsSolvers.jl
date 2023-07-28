@@ -11,37 +11,21 @@
 
   solver = LWR(:y => (neighbors=10,))
 
-  solution = solve(problem, solver)
+  sol = solve(problem, solver)
 
-  yhat = solution.y
-  yvar = solution.y_variance
-
-  if visualtests
-    plt = scatter(x, y, label="data", size=(1000,400))
-    plot!(x, yhat, ribbon=yvar, fillalpha=.5, label="LWR")
-    @test_reference "data/lwr-1D.png" plt
-  end
+  yhat = sol.y
+  yvar = sol.y_variance
 
   # 2D regression
-  sdata   = georef((y=[1.,0.,1.,0.],), [25. 50. 75. 75.;  25. 75. 50. 25.])
+  sdata   = georef((z=[1.,0.,1.,0.],), [25. 50. 75. 75.;  25. 75. 50. 25.])
   sdomain = CartesianGrid(100,100)
-  problem = EstimationProblem(sdata, sdomain, :y)
+  problem = EstimationProblem(sdata, sdomain, :z)
 
-  solver₃ = LWR(:y => (neighbors=3,))
-  solver₄ = LWR(:y => (neighbors=4,))
+  solver₃ = LWR(:z => (neighbors=3,))
+  solver₄ = LWR(:z => (neighbors=4,))
 
   sol₃ = solve(problem, solver₃)
   sol₄ = solve(problem, solver₄)
-
-  if visualtests
-    plt = contourf(sol₃, size=(800,400))
-    plot!(sdata)
-    @test_reference "data/lwr-3neigh.png" plt
-
-    plt = contourf(sol₄, size=(800,400))
-    plot!(sdata)
-    @test_reference "data/lwr-4neigh.png" plt
-  end
 
   # Haversine distance
   x = [81.45,81.42,83.35,85.24,89.51,91.01,93.05,93.07,96.04,94.09,95.03,310.0,31.0,324.0,301.0,285.0,12.0,359.0,90.0,67.0,236.0,284.0,271.0,292.0,123.0,225.0,107.0,237.0,126.0,126.0,127.5,129.0,129.0,12.56,13.23,10.23,303.0,307.0,314.0,301.0,305.0,312.0,322.0,194.0,192.0,191.0,177.0,352.99,349.75,343.61,342.84,341.85,342.83,341.43,338.93,346.0,341.7,335.5,342.5,9.0,358.55,355.75,351.45,347.79,346.92,344.42,342.73,343.7,342.0,347.65,155.39,153.29,154.08,153.45,152.0,152.2,139.17,310.44,310.52,312.0,309.93,310.47,352.41,314.85,299.72,12.36,255.64,214.41,121.32,130.58,254.7,278.76,103.07,269.0,92.0,110.0,119.0,354.0,342.0,350.0,110.0,228.3,276.1,264.4,161.4,240.82,302.0,130.13,107.11,106.43,88.57,353.0,341.5,337.92,344.94,246.4,286.27,300.36,299.65,300.63,300.42,311.6,332.0,338.0,353.0,332.0,5.25,352.0,6.8,346.01,326.0,333.0,284.0,288.0,106.4,49.2,182.13,182.7,183.18,277.0,73.3,60.0,28.0,23.0,136.0,43.0,124.2,309.5,286.45,286.6,289.76,358.0,132.65,115.63,115.4,119.0,145.05,275.0,265.0,262.66,149.3,44.0,49.0,150.0,290.0,288.0,168.0,241.0,226.0,34.5,301.0,289.7,121.9,288.0,326.0,332.0,333.0,160.0,280.0,85.0,33.0,127.0,140.0,170.0,150.0,106.0,122.0,298.0,69.0,180.0,147.0,43.0,40.0,140.0,145.0,83.0,171.0,115.0,25.0,323.0,55.5,356.8,352.2,351.3,349.5,346.25,351.5,35.0,5.0,12.0,36.0,36.2,41.0,42.5,48.0,43.15,314.58,304.68,324.95,319.5,287.88,300.0,8.0,132.0,132.0,128.0,146.15,172.4,289.1,38.85,32.6,32.87,18.45,13.28,11.3,2.9,280.0,240.0,170.0,120.0,60.0,20.0,320.0,37.0]
@@ -58,25 +42,21 @@
 
   solver = LWR(:z => (distance=Haversine(6371.),neighbors=49))
 
-  solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/lwr-haversine.png" contourf(solution, size=(900,250))
-  end
+  sol = solve(problem, solver)
 
   # units
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, LWR())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
-  @test GeoStatsSolvers.elunit(solution.T_variance) == u"K^2"
+  sol = solve(problem, LWR())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
+  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 
   # affine units
   geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  solution = solve(problem, LWR())
-  @test GeoStatsSolvers.elunit(solution.T) == u"K"
-  @test GeoStatsSolvers.elunit(solution.T_variance) == u"K^2"
+  sol = solve(problem, LWR())
+  @test GeoStatsSolvers.elunit(sol.T) == u"K"
+  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 end

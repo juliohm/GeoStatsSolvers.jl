@@ -12,10 +12,6 @@
 
   solution = solve(problem, solver)
 
-  if visualtests
-    @test_reference "data/LU-condsim.png" plot(solution,layout=(2,1))
-  end
-
   # ------------------------
   # unconditional simulation
   # ------------------------
@@ -25,10 +21,6 @@
   solver = LUGS(:z => (variogram=SphericalVariogram(range=10.),), rng=rng)
 
   solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/LU-uncondsim.png" plot(solution,layout=(2,1))
-  end
 
   # -------------
   # co-simulation
@@ -44,10 +36,6 @@
 
   solution = solve(problem, solver)
 
-  if visualtests
-    @test_reference "data/LU-cosim.png" plot(solution,layout=(2,1))
-  end
-
   # -----------
   # 2D example
   # -----------
@@ -58,10 +46,6 @@
   solver = LUGS(:z => (variogram=GaussianVariogram(range=10.),), rng=rng)
 
   solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/LU-2D.png" plot(solution,size=(900,300))
-  end
 
   # -------------------
   # anisotropy example
@@ -74,10 +58,6 @@
   solver = LUGS(:z => (variogram=GaussianVariogram(ball),), rng=rng)
 
   solution = solve(problem, solver)
-
-  if visualtests
-    @test_reference "data/LU-2D-aniso.png" plot(solution,size=(900,300))
-  end
 
   # ---------------------
   # custom factorization
@@ -92,10 +72,4 @@
 
   solution1 = solve(problem, solver1)
   solution2 = solve(problem, solver2)
-
-  if visualtests
-    p1 = plot(solution1)
-    p2 = plot(solution2)
-    @test_reference "data/LU-factorization.png" plot(p1, p2, layout=(2,1))
-  end
 end

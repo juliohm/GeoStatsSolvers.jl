@@ -11,10 +11,4 @@
 
   usol = solve(prob1, solver)
   csol = solve(prob2, solver)
-
-  # reals = csol[:z]
-  # inds = LinearIndices(size(sgrid))
-  # @test all(reals[i][inds[25,25]] == 1. for i in 1:3)
-  # @test all(reals[i][inds[50,75]] == 0. for i in 1:3)
-  # @test all(reals[i][inds[75,50]] == 1. for i in 1:3)
 end
