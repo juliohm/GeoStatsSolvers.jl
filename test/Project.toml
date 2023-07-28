@@ -12,6 +12,3 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 Variography = "04a0146e-e6df-5636-8d7f-62fa9eb0b20c"
-
-[compat]
-CoDa = "1.0"
