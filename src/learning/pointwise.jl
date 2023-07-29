@@ -7,7 +7,7 @@
 
 The pointwise learning solver introduced by Hoffimann 2021 to
 illustrate the challenges of applying classical machine learning
-models to geospatial data point-by-point in the geospatial domain.
+"point-by-point" with geospatial data.
 
 ## Parameters
 
