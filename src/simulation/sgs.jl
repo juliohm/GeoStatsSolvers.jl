@@ -5,7 +5,11 @@
 """
     SGS(var₁=>param₁, var₂=>param₂, ...)
 
-Sequential Gaussian simulation.
+The sequential Gaussian simulation solver introduced by Gomez-Hernandez 1993.
+It traverses all locations of the geospatial domain according to a path,
+approximates the conditional Gaussian distribution within a neighborhood
+using [`Kriging`](@ref), and assigns a value to the center of the
+neighborhood by sampling from this distribution.
 
 ## Parameters
 
@@ -19,8 +23,8 @@ Sequential Gaussian simulation.
 * `mapping`      - Data mapping method (default to `NearestMapping()`)
 
 For each location in the simulation `path`, a maximum number of
-neighbors `maxneighbors` is used to fit a Gaussian distribution.
-The neighbors are searched according to a `neighborhood`.
+neighbors `maxneighbors` is used to fit the conditional Gaussian
+distribution. The neighbors are searched according to a `neighborhood`.
 
 ## Global parameters
 
@@ -30,6 +34,12 @@ The neighbors are searched according to a `neighborhood`.
 
 * Gomez-Hernandez & Journel 1993. [Joint Sequential Simulation of
   MultiGaussian Fields](https://link.springer.com/chapter/10.1007/978-94-011-1739-5_8)
+
+### Notes
+
+* This solver is very sensitive to the simulation path and number of
+  samples. Care must be taken to make sure that neighborhoods have
+  enough samples for the Kriging estimator.
 """
 @simsolver SGS begin
   @param variogram = GaussianVariogram()

@@ -5,7 +5,11 @@
 """
     FFTGS(var₁=>param₁, var₂=>param₂, ...)
 
-FFT Gaussian simulation.
+The FFT Gaussian simulation solver introduced by Gutjahr 1997.
+The covariance function is perturbed in the frequency domain
+after a fast Fourier transform. White noise is added to the
+phase of the spectrum, and a realization is produced by an
+inverse Fourier transform.
 
 ## Parameters
 
@@ -32,6 +36,17 @@ can be passed to the underlying [`Kriging`](@ref) solver:
 
 * Gómez-Hernández, J. & Srivastava, R. 2021. [One Step at a Time: The Origins
   of Sequential Simulation and Beyond](https://link.springer.com/article/10.1007/s11004-021-09926-0)
+
+### Notes
+
+* The solver is limited to simulations on Cartesian grids, and care must be
+  taken to make sure that the correlation length is small enough compared to
+  the grid size.
+
+* As a general rule of thumb, avoid correlation lengths greater than 1/3 of
+  the grid.
+
+* The solver is extremely fast, and can be used to generate large 3D realizations.
 """
 @simsolver FFTGS begin
   @param  variogram = GaussianVariogram()

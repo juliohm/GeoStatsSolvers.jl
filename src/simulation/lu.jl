@@ -5,7 +5,10 @@
 """
     LUGS(var₁=>param₁, var₂=>param₂, ...)
 
-LU Gaussian simulation.
+The LU Gaussian simulation solver introduced by Alabert 1987.
+The full covariance matrix is built to include all locations
+of the simulation domain, and samples from the multivariate
+Gaussian are drawn via LU factorization.
 
 ## Parameters
 
@@ -47,6 +50,15 @@ julia> LUGS(:var₁ => (variogram=SphericalVariogram(),mean=10.),
 
 * Oliver 2003. [Gaussian cosimulation: modeling of the cross-covariance]
   (https://link.springer.com/article/10.1023%2FB%3AMATG.0000002984.56637.ef)
+
+### Notes
+
+* The solver is only adequate for domains with relatively small
+  number of elements (e.g. 100x100 grids) where it is feasible to
+  factorize the full covariance.
+
+* For larger domains (e.g. 3D grids), other solvers are preferred
+  such as [`SGS`](@ref) and [`FFTGS`](@ref).
 """
 @simsolver LUGS begin
   @param variogram = GaussianVariogram()

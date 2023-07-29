@@ -5,12 +5,7 @@
 """
     Kriging(var₁=>param₁, var₂=>param₂, ...)
 
-A polyalgorithm Kriging estimation solver.
-
-Each pair `var=>param` specifies the `KrigingParam` `param`
-for the Kriging variable `var`. In order to avoid boilerplate
-code, the constructor expects pairs of `Symbol` and `NamedTuple`
-instead.
+The Kriging estimation solver introduced by Matheron 1971.
 
 ## Parameters
 
@@ -59,6 +54,10 @@ Solve all variables of the problem with the default parameters
 ```julia
 julia> Kriging()
 ```
+
+### References
+
+* Matheron 1971. *The Theory of Regionalized Variables and Its Applications.*
 """
 @estimsolver Kriging begin
   @param variogram = GaussianVariogram()

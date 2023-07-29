@@ -5,18 +5,25 @@
 """
     PointwiseLearn(model)
 
-A learning solver that converts geospatial data to a tabular format
-with features (and possibly labels) for each point, and then solves
-the problem with classical statistical learning `model`.
+The pointwise learning solver introduced by Hoffimann 2021 to
+illustrate the challenges of applying classical machine learning
+models to geospatial data point-by-point in the geospatial domain.
 
 ## Parameters
 
 * `model` - Learning model implementing the `MLJModelInterface.jl`.
 
-## References
+### References
 
-* Hoffimann et al. 2020. [Geostatistical Learning: Challenges and Opportunities]
-  (https://arxiv.org/abs/2102.08791)
+* Hoffimann et al. 2021. [Geostatistical Learning: Challenges and Opportunities]
+  (https://www.frontiersin.org/articles/10.3389/fams.2021.689393/full)
+
+### Notes
+
+* This solver is equivalent to a vanilla framework for
+  machine learning (e.g. MLJ.jl). It exists for didactic
+  and practical purposes since it automates the process
+  of learning functions over geospatial domains.
 """
 struct PointwiseLearn{M} <: LearningSolver
   model::M

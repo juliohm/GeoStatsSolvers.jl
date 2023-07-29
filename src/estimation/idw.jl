@@ -5,7 +5,11 @@
 """
     IDW(var₁=>param₁, var₂=>param₂, ...)
 
-Inverse distance weighting estimation solver.
+The inverse distance weighting estimation solver introduced
+in the very early days of geostatistics by Shepard 1968. It
+is perhaps the simplest first attempt in the literature to
+perform estimation based on the notion of proximity to data
+locations.
 
 ## Parameters
 
@@ -16,6 +20,16 @@ Inverse distance weighting estimation solver.
 ### References
 
 Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced data.*
+
+### Notes
+
+* This implementation makes use of k-d trees from the NearestNeighbors.jl package,
+  which leads to a fast estimation method for spatial domains with large number of
+  elements.
+
+* Although this method is recommended for fast assessment of a new field, it has
+  poor statistical properties (lacks covariance model) and should mainly be used
+  for qualitative purposes.
 """
 @estimsolver IDW begin
   @param neighbors = nothing

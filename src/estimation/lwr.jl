@@ -5,7 +5,10 @@
 """
     LWR(var₁=>param₁, var₂=>param₂, ...)
 
-Locally weighted regression estimation solver.
+The locally weighted regression (a.k.a. LOESS) estimation solver
+introduced by Cleveland 1979. It is the most natural generalization
+of [`IDW`](@ref) in which one is allowed to use a custom weight
+function instead of distance-based weights.
 
 ## Parameters
 
@@ -18,6 +21,19 @@ Locally weighted regression estimation solver.
 * Stone 1977. *Consistent non-parametric regression.*
 * Cleveland 1979. *Robust locally weighted regression and smoothing scatterplots.*
 * Cleveland & Grosse 1991. *Computational methods for local regression.*
+
+### Notes
+
+* This implementation makes use of k-d trees from the NearestNeighbors.jl
+  package for fast data lookup.
+
+* Locally weighted regression (LWR or LOESS) is a popular non-parametric
+  method, however it still has poor statistical properties compared to
+  other estimation methods such as [`Kriging`](@ref) that explicitly
+  model spatial correlation.
+
+* In the current implementation, the estimation variance is computed
+  assuming Gaussian residuals. 
 """
 @estimsolver LWR begin
   @param neighbors = nothing

@@ -5,7 +5,9 @@
 """
     SPDEGS(var₁=>param₁, var₂=>param₂, ...)
 
-SPDE Gaussian simulation.
+The SPDE Gaussian simulation solver introduced by Lindgren 2011.
+It relies on a discretization of the Laplace-Beltrami operator on
+meshes and is adequate for highly curved domains (e.g. surfaces).
 
 ## Parameters
 
