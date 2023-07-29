@@ -81,7 +81,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       # compute covariances between centroid and all points
       𝒟c = [centroid(pgrid, cindex)]
       𝒟p = [centroid(pgrid, eindex) for eindex in 1:nelms]
-      cs = sill(γ) .- pairwise(γ, 𝒟c, 𝒟p)
+      cs = sill(γ) .- Variography.pairwise(γ, 𝒟c, 𝒟p)
       C  = reshape(cs, dims)
 
       # move to frequency domain
