@@ -3,11 +3,11 @@
   # 1D PROBLEM (ALL)
   # -----------------
 
-  data1D = georef((z=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],), collect(0.0:10.0:100.0)')
+  data1D = georef((; z=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]), collect(0.0:10.0:100.0)')
   grid1D = CartesianGrid(100)
   problem = EstimationProblem(data1D, grid1D, :z)
 
-  global_kriging = Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0),))
+  global_kriging = Kriging(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
   nearest_kriging = Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3))
   local_kriging =
     Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3, neighborhood=MetricBall(100.0)))
@@ -21,12 +21,12 @@
   # 2D PROBLEM (GLOBAL)
   # --------------------
 
-  data2D = georef((z=[1.0, 0.0, 1.0],), [(25.0, 25.0), (50.0, 75.0), (75.0, 50.0)])
+  data2D = georef((; z=[1.0, 0.0, 1.0]), [(25.0, 25.0), (50.0, 75.0), (75.0, 50.0)])
   grid2D = CartesianGrid((100, 100), (0.5, 0.5), (1.0, 1.0))
 
   problem = EstimationProblem(data2D, grid2D, :z)
 
-  solver = Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0),))
+  solver = Kriging(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
 
   Random.seed!(2021)
   sol = solve(problem, solver)
@@ -89,14 +89,14 @@
   # COMPOSITIONAL DATA
   # -------------------
 
-  table = (z=[Composition(0.1, 0.2), Composition(0.3, 0.4), Composition(0.5, 0.6)],)
+  table = (; z=[Composition(0.1, 0.2), Composition(0.3, 0.4), Composition(0.5, 0.6)])
   coord = [(25.0, 25.0), (50.0, 75.0), (75.0, 50.0)]
   data = georef(table, coord)
   grid = CartesianGrid(100, 100)
 
   problem = EstimationProblem(data, grid, :z)
 
-  solver = Kriging(:z => (variogram=GaussianVariogram(range=35.0),))
+  solver = Kriging(:z => (; variogram=GaussianVariogram(range=35.0)))
 
   Random.seed!(2021)
   sol = solve(problem, solver)
