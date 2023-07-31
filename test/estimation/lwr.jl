@@ -3,10 +3,10 @@
   rng = MersenneTwister(2017)
   N = 100
   x = range(0, stop=1, length=N)
-  y = x.^2 .+ [i/1000*randn(rng) for i=1:N]
+  y = x .^ 2 .+ [i / 1000 * randn(rng) for i in 1:N]
 
-  sdata   = georef((y=y,), reshape(x, 1, length(x)))
-  sdomain = CartesianGrid((0.,), (1.,), dims=(N,))
+  sdata = georef((y=y,), reshape(x, 1, length(x)))
+  sdomain = CartesianGrid((0.0,), (1.0,), dims=(N,))
   problem = EstimationProblem(sdata, sdomain, :y)
 
   solver = LWR(:y => (neighbors=10,))
@@ -17,8 +17,8 @@
   yvar = sol.y_variance
 
   # 2D regression
-  sdata   = georef((z=[1.,0.,1.,0.],), [25. 50. 75. 75.;  25. 75. 50. 25.])
-  sdomain = CartesianGrid(100,100)
+  sdata = georef((z=[1.0, 0.0, 1.0, 0.0],), [25.0 50.0 75.0 75.0; 25.0 75.0 50.0 25.0])
+  sdomain = CartesianGrid(100, 100)
   problem = EstimationProblem(sdata, sdomain, :z)
 
   solver₃ = LWR(:z => (neighbors=3,))
@@ -30,7 +30,7 @@
   # Haversine distance
   A = readdlm(joinpath(datadir, "coords.txt"))
   x, y, z = A[:, 1], A[:, 2], A[:, 3]
-  sdata   = georef((z=z,), [x y]')
+  sdata = georef((z=z,), [x y]')
   sdomain = begin
     dims = (180, 91)
     start = (1.0, -89.01098901098901)
@@ -39,12 +39,12 @@
   end
   problem = EstimationProblem(sdata, sdomain, :z)
 
-  solver = LWR(:z => (distance=Haversine(6371.),neighbors=49))
+  solver = LWR(:z => (distance=Haversine(6371.0), neighbors=49))
 
   sol = solve(problem, solver)
 
   # units
-  geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25. 50. 75.;  25. 75. 50.])
+  geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
   sol = solve(problem, LWR())
@@ -52,7 +52,7 @@
   @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 
   # affine units
-  geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25. 50. 75.;  25. 75. 50.])
+  geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
   sol = solve(problem, LWR())

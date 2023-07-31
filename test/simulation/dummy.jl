@@ -19,13 +19,12 @@ status(::FittedDummyEstimator) = true
 import GeoStatsBase: solvesingle
 
 @simsolver DummySimSolver begin end
-function solvesingle(problem::SimulationProblem, covars::NamedTuple,
-                     ::DummySimSolver, preproc)
+function solvesingle(problem::SimulationProblem, covars::NamedTuple, ::DummySimSolver, preproc)
   npts = nelements(domain(problem))
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
   reals = map(covars.names) do var
-    V    = mactypeof[var]
-    real = vcat(fill(zero(V), npts÷2), fill(one(V), npts÷2))
+    V = mactypeof[var]
+    real = vcat(fill(zero(V), npts ÷ 2), fill(one(V), npts ÷ 2))
     var => real
   end
   Dict(reals)

@@ -1,18 +1,18 @@
 @testset "PointwiseLearn" begin
   rng = MersenneTwister(1234)
-  tree = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
+  tree = @load DecisionTreeClassifier pkg = DecisionTree verbosity = 0
 
   # synthetic data
-  f(x,y) = sin(4*(abs(x)+abs(y))) < 0 ? 1 : 0 
-  X = [sin(i/10) for i in 1:100, j in 1:100]
-  Y = [sin(j/10) for i in 1:100, j in 1:100]
-  Z = categorical(f.(X,Y))
+  f(x, y) = sin(4 * (abs(x) + abs(y))) < 0 ? 1 : 0
+  X = [sin(i / 10) for i in 1:100, j in 1:100]
+  Y = [sin(j / 10) for i in 1:100, j in 1:100]
+  Z = categorical(f.(X, Y))
   ϵ₁ = 0.1randn(rng, Float64, size(X))
   ϵ₂ = 0.1randn(rng, Float64, size(Y))
 
   # source and target data
-  S = georef((X=X,Y=Y,Z=Z))
-  T = georef((X=X+ϵ₁,Y=Y+ϵ₂))
+  S = georef((X=X, Y=Y, Z=Z))
+  T = georef((X=X + ϵ₁, Y=Y + ϵ₂))
 
   # view versions
   inds = shuffle(rng, 1:nitems(S))
@@ -20,7 +20,7 @@
   Tv = view(T, inds)
 
   # classification task
-  𝓉 = ClassificationTask((:X,:Y), :Z)
+  𝓉 = ClassificationTask((:X, :Y), :Z)
 
   # learning problems
   𝒫₁ = LearningProblem(S, T, 𝓉)

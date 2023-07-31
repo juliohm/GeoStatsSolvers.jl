@@ -72,8 +72,8 @@ end
 
 function preprocess(problem::EstimationProblem, solver::Kriging)
   # retrieve problem info
-  pdata   = data(problem)
-  dtable  = values(pdata)
+  pdata = data(problem)
+  dtable = values(pdata)
   ddomain = domain(pdata)
   pdomain = domain(problem)
 
@@ -99,33 +99,28 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       end
 
       # subset of non-missing samples
-      vtable  = (;var => collect(skipmissing(z)))
+      vtable = (; var => collect(skipmissing(z)))
       vdomain = view(ddomain, inds)
       samples = georef(vtable, vdomain)
 
       # determine which Kriging variant to use
-      estimator = kriging_ui(pdomain,
-                             varparams.variogram,
-                             varparams.mean,
-                             varparams.degree,
-                             varparams.drifts)
+      estimator = kriging_ui(pdomain, varparams.variogram, varparams.mean, varparams.degree, varparams.drifts)
 
       # determine minimum/maximum number of neighbors
       minneighbors = varparams.minneighbors
       maxneighbors = varparams.maxneighbors
 
       # determine bounded search method
-      bsearcher = searcher_ui(vdomain,
-                              varparams.maxneighbors,
-                              varparams.distance,
-                              varparams.neighborhood)
+      bsearcher = searcher_ui(vdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
 
       # save preprocessed input
-      preproc[var] = (samples=samples,
-                      estimator=estimator,
-                      minneighbors=minneighbors,
-                      maxneighbors=maxneighbors,
-                      bsearcher=bsearcher)
+      preproc[var] = (
+        samples=samples,
+        estimator=estimator,
+        minneighbors=minneighbors,
+        maxneighbors=maxneighbors,
+        bsearcher=bsearcher
+      )
     end
   end
 
@@ -140,7 +135,8 @@ function solve(problem::EstimationProblem, solver::Kriging)
   preproc = preprocess(problem, solver)
 
   # results for each variable
-  μs = []; σs = []
+  μs = []
+  σs = []
   for var in name.(variables(problem))
     # maximum number of neighbors
     maxneighbors = preproc[var].maxneighbors
@@ -169,7 +165,7 @@ end
 
 function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
   # retrieve problem info
-  pdata   = data(problem)
+  pdata = data(problem)
   pdomain = domain(problem)
 
   # unpack preprocessed parameters
@@ -190,14 +186,14 @@ end
 
 function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
   # retrieve problem info
-  pdata   = data(problem)
+  pdata = data(problem)
   pdomain = domain(problem)
 
   # unpack preprocessed parameters
-  estimator    = preproc[var].estimator
+  estimator = preproc[var].estimator
   minneighbors = preproc[var].minneighbors
   maxneighbors = preproc[var].maxneighbors
-  bsearcher    = preproc[var].bsearcher
+  bsearcher = preproc[var].bsearcher
 
   # pre-allocate memory for neighbors
   neighbors = Vector{Int}(undef, maxneighbors)

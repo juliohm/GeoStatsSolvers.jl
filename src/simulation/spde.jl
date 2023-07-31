@@ -54,14 +54,14 @@ function preprocess(problem::SimulationProblem, solver::SPDEGS)
       @assert 𝓁 > 0 "range must be positive"
 
       # LHS of SPDE (κ² - Δ)Z = τW
-      α = 2one(σ+𝓁)
+      α = 2one(σ + 𝓁)
       ν = α - d / 2
       κ = 1 / 𝓁
-      A = κ^2*I - Δ
+      A = κ^2 * I - Δ
 
       # covariance structure
-      τ² = σ^2 * κ^(2ν) * (4π)^(d/2) * gamma(α) / gamma(ν)
-      Q  = A'A / τ²
+      τ² = σ^2 * κ^(2ν) * (4π)^(d / 2) * gamma(α) / gamma(ν)
+      Q = A'A / τ²
 
       # factorization
       F = cholesky(Array(Q))
@@ -98,7 +98,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::SPD
 
     # perform simulation
     w = randn(rng, V, n)
-    z = L*w
+    z = L * w
 
     var => z
   end

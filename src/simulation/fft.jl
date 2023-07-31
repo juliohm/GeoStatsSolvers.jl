@@ -49,24 +49,24 @@ can be passed to the underlying [`Kriging`](@ref) solver:
 * The solver is extremely fast, and can be used to generate large 3D realizations.
 """
 @simsolver FFTGS begin
-  @param  variogram = GaussianVariogram()
-  @param  mean = 0
-  @param  minneighbors = 1
-  @param  maxneighbors = 10
-  @param  neighborhood = nothing
-  @param  distance = Euclidean()
+  @param variogram = GaussianVariogram()
+  @param mean = 0
+  @param minneighbors = 1
+  @param maxneighbors = 10
+  @param neighborhood = nothing
+  @param distance = Euclidean()
   @global threads = cpucores()
   @global rng = Random.GLOBAL_RNG
 end
 
 function preprocess(problem::SimulationProblem, solver::FFTGS)
   # retrieve problem info
-  pdomain  = domain(problem)
+  pdomain = domain(problem)
   pgrid, _ = unview(pdomain)
-  dims     = size(pgrid)
-  nelms    = nelements(pgrid)
-  center   = CartesianIndex(dims .÷ 2)
-  cindex   = LinearIndices(dims)[center]
+  dims = size(pgrid)
+  nelms = nelements(pgrid)
+  center = CartesianIndex(dims .÷ 2)
+  cindex = LinearIndices(dims)[center]
 
   # number of threads in FFTW
   FFTW.set_num_threads(solver.threads)
@@ -97,7 +97,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       𝒟c = [centroid(pgrid, cindex)]
       𝒟p = [centroid(pgrid, eindex) for eindex in 1:nelms]
       cs = sill(γ) .- Variography.pairwise(γ, 𝒟c, 𝒟p)
-      C  = reshape(cs, dims)
+      C = reshape(cs, dims)
 
       # move to frequency domain
       F = sqrt.(abs.(fft(fftshift(C))))
@@ -106,30 +106,33 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
       # perform Kriging in case of conditional simulation
       z̄, krig, dinds = nothing, nothing, nothing
       if hasdata(problem)
-        pdata   = data(problem)
-        dtable  = values(pdata)
+        pdata = data(problem)
+        dtable = values(pdata)
         ddomain = domain(pdata)
         if var ∈ Tables.schema(dtable).names
           # estimate conditional mean
           kdat = georef(dtable, centroid.(ddomain))
           kdom = PointSet(centroid.(pdomain))
           prob = EstimationProblem(kdat, kdom, var)
-          krig = Kriging(var => (
-              variogram = γ, mean = μ,
-              minneighbors = varparams.minneighbors,
-              maxneighbors = varparams.maxneighbors,
-              neighborhood = varparams.neighborhood,
-              distance     = varparams.distance
-          ))
+          krig = Kriging(
+            var => (
+              variogram=γ,
+              mean=μ,
+              minneighbors=varparams.minneighbors,
+              maxneighbors=varparams.maxneighbors,
+              neighborhood=varparams.neighborhood,
+              distance=varparams.distance
+            )
+          )
           ksol = solve(prob, krig)
           z̄ = getproperty(ksol, var)
 
           # find data locations in problem domain
-          ndata    = nelements(ddomain)
+          ndata = nelements(ddomain)
           point(i) = centroid(ddomain, i)
           searcher = KNearestSearch(pdomain, 1)
-          found    = [search(point(i), searcher) for i in 1:ndata]
-          dinds    = unique(first.(found))
+          found = [search(point(i), searcher) for i in 1:ndata]
+          dinds = unique(first.(found))
         end
       end
 
@@ -146,9 +149,9 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
   rng = solver.rng
 
   # retrieve problem info
-  pdomain     = domain(problem)
+  pdomain = domain(problem)
   pgrid, inds = unview(pdomain)
-  dims        = size(pgrid)
+  dims = size(pgrid)
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
 
@@ -177,7 +180,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
       zᵤ # we are all set
     else
       # view realization at data locations
-      dtable  = (;var => view(zᵤ, dinds))
+      dtable = (; var => view(zᵤ, dinds))
       ddomain = view(pdomain, dinds)
 
       # solve estimation problem
@@ -185,7 +188,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
       kdom = PointSet(centroid.(pdomain))
       prob = EstimationProblem(kdat, kdom, var)
       ksol = solve(prob, krig)
-      z̄ᵤ   = getproperty(ksol, var)
+      z̄ᵤ = getproperty(ksol, var)
 
       # add residual field
       z̄ .+ (zᵤ .- z̄ᵤ)
