@@ -18,15 +18,16 @@ function instead of distance-based weights.
 * `distance`     - A distance from Distances.jl (default to `Euclidean()`)
 * `weightfun`    - Weighting function (default to `exp(-3 * h^2)`)
 
-The `maxneighbors` option can be used to perform IDW estimation
-with a subset of data points per estimation location. If `maxneighbors`
-is set to `nothing` then all data points will be used. Two neighborhood
-search methods are available depending on the value of `neighborhood`:
+The `maxneighbors` option can be used to perform locally weighted regression
+with a subset of measurements per estimation location. If `maxneighbors`
+is not provided, then all measurements will be used.
+
+Two `neighborhood` search methods are available:
 
 * If a `neighborhood` is provided, local estimation is performed 
   by sliding the `neighborhood` in the domain.
 
-* If a `neighborhood` is provided, the estimation is performed 
+* If a `neighborhood` is not provided, the estimation is performed 
   using `maxneighbors` nearest neighbors according to `distance`.
 
 ### References
@@ -80,15 +81,12 @@ function solve(problem::EstimationProblem, solver::LWR)
       𝒯 = values(𝒮)
       n = nelements(𝒟)
 
-      # weight function
-      w = varparams.weightfun
-
-      # determine distance
-      distance = varparams.distance
-
-      # determine minimum/maximum number of neighbors
+      # retrieve solver params
       minneighbors = varparams.minneighbors
       maxneighbors = varparams.maxneighbors
+      neighborhood = varparams.neighborhood
+      distance = varparams.distance
+      weightfun = varparams.weightfun
 
       @assert n > 0 "estimation requires data"
       @assert minneighbors < n "invalid number of minneighbors"
@@ -98,7 +96,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       end
 
       # determine bounded search method
-      bsearcher = searcher_ui(𝒟, maxneighbors, distance, varparams.neighborhood)
+      bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
       # pre-allocate memory for neighbors
       neighbors = Vector{Int}(undef, isnothing(maxneighbors) ? n : maxneighbors)
@@ -130,7 +128,7 @@ function solve(problem::EstimationProblem, solver::LWR)
           δs = ds ./ maximum(ds)
 
           # weighted least-squares
-          Wₗ = Diagonal(w.(δs))
+          Wₗ = Diagonal(weightfun.(δs))
           Xₗ = [ones(eltype(x), nneigh) reduce(hcat, X[is])']
           zₗ = view(z, is)
           θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ

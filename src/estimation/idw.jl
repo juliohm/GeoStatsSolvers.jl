@@ -19,15 +19,16 @@ locations.
 * `distance`     - A distance defined in Distances.jl (default to `Euclidean()`)
 * `power`        - Power of the distances (default to `1`)
 
-The `maxneighbors` option can be used to perform IDW estimation
-with a subset of data points per estimation location. If `maxneighbors`
-is set to `nothing` then all data points will be used. Two neighborhood
-search methods are available depending on the value of `neighborhood`:
+The `maxneighbors` option can be used to perform inverse distance weighting
+with a subset of measurements per estimation location. If `maxneighbors`
+is not provided, then all measurements will be used.
+
+Two `neighborhood` search methods are available:
 
 * If a `neighborhood` is provided, local estimation is performed 
   by sliding the `neighborhood` in the domain.
 
-* If a `neighborhood` is provided, the estimation is performed 
+* If a `neighborhood` is not provided, the estimation is performed 
   using `maxneighbors` nearest neighbors according to `distance`.
 
 ### References
@@ -76,18 +77,15 @@ function solve(problem::EstimationProblem, solver::IDW)
       𝒯 = values(𝒮)
       n = nelements(𝒟)
 
-      # determine power of distances
-      p = varparams.power
-
-      # determine distance
-      distance = varparams.distance
-
-      # determine minimum/maximum number of neighbors
+      # retrieve solver params
       minneighbors = varparams.minneighbors
       maxneighbors = varparams.maxneighbors
+      neighborhood = varparams.neighborhood
+      distance = varparams.distance
+      power = varparams.power
 
       @assert n > 0 "estimation requires data"
-      @assert p > 0 "power must be positive"
+      @assert power > 0 "power must be positive"
       @assert minneighbors < n "invalid number of minneighbors"
       if !isnothing(maxneighbors)
         @assert maxneighbors ≤ n "invalid number of maxneighbors"
@@ -95,7 +93,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       end
 
       # determine bounded search method
-      bsearcher = searcher_ui(𝒟, maxneighbors, distance, varparams.neighborhood)
+      bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
       # pre-allocate memory for neighbors
       neighbors = Vector{Int}(undef, isnothing(maxneighbors) ? n : maxneighbors)
@@ -124,7 +122,7 @@ function solve(problem::EstimationProblem, solver::IDW)
           x = coordinates(center)
           is = view(neighbors, 1:nneigh)
           ds = [distance(x, X[i]) for i in is]
-          ws = 1 ./ ds .^ p
+          ws = 1 ./ ds .^ power
           Σw = sum(ws)
 
           if isinf(Σw) # some distance is zero?
