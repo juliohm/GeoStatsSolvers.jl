@@ -23,7 +23,7 @@ returns a *learned* model.
 function learn(𝒯::LearningTask, 𝒟, 𝓂)
   # retrieve table of values
   table = values(𝒟)
-  cols  = Tables.columns(table)
+  cols = Tables.columns(table)
 
   # learn model with table
   X = table |> Select(features(𝒯))

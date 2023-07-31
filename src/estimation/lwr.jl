@@ -38,7 +38,7 @@ function instead of distance-based weights.
 @estimsolver LWR begin
   @param neighbors = nothing
   @param distance = Euclidean()
-  @param weightfun = h -> exp(-3*h^2)
+  @param weightfun = h -> exp(-3 * h^2)
 end
 
 function solve(problem::EstimationProblem, solver::LWR)
@@ -50,7 +50,8 @@ function solve(problem::EstimationProblem, solver::LWR)
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
 
   # result for each variable
-  μs = []; σs = []
+  μs = []
+  σs = []
 
   for covars in covariables(problem, solver)
     for var in covars.names
@@ -108,12 +109,12 @@ function solve(problem::EstimationProblem, solver::LWR)
         Wₗ = Diagonal(w.(δs))
         Xₗ = [ones(eltype(x), k) reduce(hcat, X[is])']
         zₗ = view(z, is)
-        θₗ = Xₗ'*Wₗ*Xₗ \ Xₗ'*Wₗ*zₗ
+        θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ
 
         # linear combination of response values
         xₒ = [one(eltype(x)); x]
         ẑₒ = θₗ ⋅ xₒ
-        rₗ = Wₗ*Xₗ*(Xₗ'*Wₗ*Xₗ\xₒ)
+        rₗ = Wₗ * Xₗ * (Xₗ' * Wₗ * Xₗ \ xₒ)
         r̂ₒ = norm(rₗ)
 
         ẑₒ, r̂ₒ

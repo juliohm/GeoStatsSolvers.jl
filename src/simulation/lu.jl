@@ -71,7 +71,7 @@ end
 
 function preprocess(problem::SimulationProblem, solver::LUGS)
   # retrieve problem info
-  pdata   = data(problem)
+  pdata = data(problem)
   pdomain = domain(problem)
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
@@ -80,7 +80,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
   preproc = Dict()
 
   for covars in covariables(problem, solver)
-    conames  = covars.names
+    conames = covars.names
     coparams = []
 
     # 1 or 2 variables can be simulated simultaneously
@@ -126,7 +126,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
       C₂₂ = sill(γ) .- Variography.pairwise(γ, 𝒟s)
 
       if isempty(dlocs)
-        d₂  = zero(V)
+        d₂ = zero(V)
         L₂₂ = fact(Symmetric(C₂₂)).L
       else
         # covariance beween data locations
@@ -138,7 +138,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
         A₂₁ = B₁₂'
 
         d₂ = A₂₁ * (L₁₁ \ z₁)
-        L₂₂ = fact(Symmetric(C₂₂ - A₂₁*B₁₂)).L
+        L₂₂ = fact(Symmetric(C₂₂ - A₂₁ * B₁₂)).L
       end
 
       if !isnothing(varparams.mean) && !isempty(dlocs)
@@ -173,8 +173,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
   preproc
 end
 
-function solvesingle(::SimulationProblem, covars::NamedTuple,
-                     solver::LUGS, preproc)
+function solvesingle(::SimulationProblem, covars::NamedTuple, solver::LUGS, preproc)
   # random number generator
   rng = solver.rng
 
@@ -209,9 +208,9 @@ function lusim(rng, params, ρ=nothing, w₁=nothing)
   # conditional simulation
   w₂ = randn(rng, size(L₂₂, 2))
   if isnothing(ρ)
-    y₂ = d₂ .+ L₂₂*w₂
+    y₂ = d₂ .+ L₂₂ * w₂
   else
-    y₂ = d₂ .+ L₂₂*(ρ*w₁ + √(1-ρ^2)*w₂)
+    y₂ = d₂ .+ L₂₂ * (ρ * w₁ + √(1 - ρ^2) * w₂)
   end
 
   # hard data and simulated values

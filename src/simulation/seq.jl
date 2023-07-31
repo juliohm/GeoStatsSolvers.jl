@@ -57,10 +57,7 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
       maxneighbors = varparams.maxneighbors
 
       # determine bounded search method
-      bsearcher = searcher_ui(pdomain,
-                              varparams.maxneighbors,
-                              varparams.distance,
-                              varparams.neighborhood)
+      bsearcher = searcher_ui(pdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
 
       # determine data mappings
       vmappings = if hasdata(problem)
@@ -70,13 +67,15 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
       end
 
       # save preprocessed input
-      preproc[var] = (estimator=varparams.estimator,
-                      minneighbors=minneighbors,
-                      maxneighbors=maxneighbors,
-                      marginal=varparams.marginal,
-                      path=varparams.path,
-                      bsearcher=bsearcher,
-                      mappings=vmappings)
+      preproc[var] = (
+        estimator=varparams.estimator,
+        minneighbors=minneighbors,
+        maxneighbors=maxneighbors,
+        marginal=varparams.marginal,
+        path=varparams.path,
+        bsearcher=bsearcher,
+        mappings=vmappings
+      )
     end
   end
 
@@ -98,8 +97,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
 
   varreals = map(covars.names) do var
     # unpack preprocessed parameters
-    estimator, minneighbors, maxneighbors,
-    marginal, path, bsearcher, mappings = preproc[var]
+    estimator, minneighbors, maxneighbors, marginal, path, bsearcher, mappings = preproc[var]
 
     # determine value type
     V = mactypeof[var]
@@ -140,7 +138,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
           # view neighborhood with data
           tab = (; var => view(realization, nview))
           dom = view(pset, nview)
-          𝒟   = georef(tab, dom)
+          𝒟 = georef(tab, dom)
 
           # fit estimator to data
           fitted = fit(estimator, 𝒟)

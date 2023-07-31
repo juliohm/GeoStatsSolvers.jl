@@ -78,12 +78,15 @@ function preprocess(problem::SimulationProblem, solver::SGS)
       mapping = varparams.mapping
 
       # equivalent parameters for SeqSim solver
-      param = (estimator=estimator,
-               neighborhood=varparams.neighborhood,
-               minneighbors=varparams.minneighbors,
-               maxneighbors=varparams.maxneighbors,
-               marginal=marginal, path=path,
-               mapping=mapping)
+      param = (
+        estimator=estimator,
+        neighborhood=varparams.neighborhood,
+        minneighbors=varparams.minneighbors,
+        maxneighbors=varparams.maxneighbors,
+        marginal=marginal,
+        path=path,
+        mapping=mapping
+      )
 
       push!(params, var => param)
     end

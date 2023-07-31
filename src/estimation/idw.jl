@@ -46,7 +46,8 @@ function solve(problem::EstimationProblem, solver::IDW)
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
 
   # result for each variable
-  μs = []; σs = []
+  μs = []
+  σs = []
 
   for covars in covariables(problem, solver)
     for var in covars.names
@@ -98,7 +99,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       pred = map(inds) do ind
         x = coordinates(centroid(pdomain, ind))
         is, ds = knn(tree, x, k)
-        ws = 1 ./ ds.^p
+        ws = 1 ./ ds .^ p
         Σw = sum(ws)
 
         if isinf(Σw) # some distance is zero?
@@ -107,14 +108,14 @@ function solve(problem::EstimationProblem, solver::IDW)
           σ = zero(eltype(ds))
         else
           ws /= Σw
-          vs  = view(z, is)
-          μ = sum(ws[i]*vs[i] for i in eachindex(vs))
+          vs = view(z, is)
+          μ = sum(ws[i] * vs[i] for i in eachindex(vs))
           σ = minimum(ds)
         end
 
         μ, σ
       end
-  
+
       varμ = first.(pred)
       varσ = last.(pred)
 

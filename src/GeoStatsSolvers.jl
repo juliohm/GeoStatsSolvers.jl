@@ -75,6 +75,7 @@ export
   PointwiseLearn,
 
   # utilities
-  learn, perform
+  learn,
+  perform
 
 end

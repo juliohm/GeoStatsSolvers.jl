@@ -22,14 +22,12 @@ testfiles = [
   "estimation/idw.jl",
   "estimation/lwr.jl",
   "estimation/krig.jl",
-
   "simulation/lu.jl",
   "simulation/fft.jl",
   "simulation/seq.jl",
   "simulation/sgs.jl",
   "simulation/spde.jl",
   "simulation/cookie.jl",
-
   "learning/pointwise.jl"
 ]
 
