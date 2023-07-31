@@ -9,10 +9,13 @@ using Unitful
 using CoDa
 using MLJ: @load
 using LinearAlgebra
+using DelimitedFiles
 using Test, Random
 
 # dummy definitions
 include("dummy.jl")
+
+datadir = joinpath(@__DIR__, "data")
 
 # list of tests
 testfiles = [
