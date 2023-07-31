@@ -91,9 +91,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       maxneighbors = varparams.maxneighbors
 
       @assert n > 0 "estimation requires data"
-
       @assert maxneighbors ≤ n "invalid number of maxneighbors"
-
       @assert minneighbors < maxneighbors "invalid number of minneighbors"
 
       # determine bounded search method
