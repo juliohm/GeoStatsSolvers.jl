@@ -91,14 +91,17 @@ function solve(problem::EstimationProblem, solver::LWR)
       maxneighbors = varparams.maxneighbors
 
       @assert n > 0 "estimation requires data"
-      @assert maxneighbors ≤ n "invalid number of maxneighbors"
-      @assert minneighbors < maxneighbors "invalid number of minneighbors"
+      @assert minneighbors < n "invalid number of minneighbors"
+      if !isnothing(maxneighbors)
+        @assert maxneighbors ≤ n "invalid number of maxneighbors"
+        @assert minneighbors < maxneighbors "invalid number of minneighbors"
+      end
 
       # determine bounded search method
       bsearcher = searcher_ui(𝒟, maxneighbors, distance, varparams.neighborhood)
 
       # pre-allocate memory for neighbors
-      neighbors = Vector{Int}(undef, maxneighbors)
+      neighbors = Vector{Int}(undef, isnothing(maxneighbors) ? n : maxneighbors)
 
       # pre-compute the centroid coordinates
       X = [coordinates(centroid(𝒟, i)) for i in 1:n]
@@ -128,7 +131,7 @@ function solve(problem::EstimationProblem, solver::LWR)
 
           # weighted least-squares
           Wₗ = Diagonal(w.(δs))
-          Xₗ = [ones(eltype(x), k) reduce(hcat, X[is])']
+          Xₗ = [ones(eltype(x), nneigh) reduce(hcat, X[is])']
           zₗ = view(z, is)
           θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ
 
