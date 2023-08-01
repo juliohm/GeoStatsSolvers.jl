@@ -25,15 +25,16 @@ default with the `variogram` only.
 * `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
 
 The `maxneighbors` option can be used to perform approximate Kriging
-with a subset of data points per estimation location. If `maxneighbors`
-is set to `nothing`, global Kriging is performed. Two neighborhood
-search methods are available depending on the value of `neighborhood`:
+with a subset of measurements per estimation location. If `maxneighbors`
+is not provided, then all measurements will be used.
 
-* If a `neighborhood` is provided, local Kriging is performed by sliding
-  the `neighborhood` in the domain.
+Two `neighborhood` search methods are available:
 
-* If `neighborhood` is not provided, the Kriging system is built using
-  `maxneighbors` nearest neighbors according to a `distance`.
+* If a `neighborhood` is provided, local estimation is performed 
+  by sliding the `neighborhood` in the domain.
+
+* If a `neighborhood` is not provided, the estimation is performed 
+  using `maxneighbors` nearest neighbors according to `distance`.
 
 ## Examples
 

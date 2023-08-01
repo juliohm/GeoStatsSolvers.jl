@@ -79,24 +79,21 @@ function solve(problem::EstimationProblem, solver::IDW)
 
       # retrieve solver params
       minneighbors = varparams.minneighbors
-      maxneighbors = varparams.maxneighbors
+      maxneighbors = isnothing(varparams.maxneighbors) ? n : varparams.maxneighbors
       neighborhood = varparams.neighborhood
       distance = varparams.distance
       power = varparams.power
 
       @assert n > 0 "estimation requires data"
       @assert power > 0 "power must be positive"
-      @assert minneighbors < n "invalid number of minneighbors"
-      if !isnothing(maxneighbors)
-        @assert maxneighbors ≤ n "invalid number of maxneighbors"
-        @assert minneighbors < maxneighbors "invalid number of minneighbors"
-      end
+      @assert maxneighbors ≤ n "invalid number of maxneighbors"
+      @assert minneighbors < maxneighbors "invalid number of minneighbors"
 
       # determine bounded search method
       bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
       # pre-allocate memory for neighbors
-      neighbors = Vector{Int}(undef, isnothing(maxneighbors) ? n : maxneighbors)
+      neighbors = Vector{Int}(undef, maxneighbors)
 
       # pre-compute the centroid coordinates
       X = [coordinates(centroid(𝒟, i)) for i in 1:n]
