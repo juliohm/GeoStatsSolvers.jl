@@ -20,7 +20,7 @@ In the case of conditional simulation, the following parameters
 can be passed to the underlying [`Kriging`](@ref) solver:
 
 * `minneighbors` - Minimum number of neighbors (default to `1`)
-* `maxneighbors` - Maximum number of neighbors (default to `10`)
+* `maxneighbors` - Maximum number of neighbors (default to `nothing)
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
 
@@ -52,7 +52,7 @@ can be passed to the underlying [`Kriging`](@ref) solver:
   @param variogram = GaussianVariogram()
   @param mean = 0
   @param minneighbors = 1
-  @param maxneighbors = 10
+  @param maxneighbors = nothing
   @param neighborhood = nothing
   @param distance = Euclidean()
   @global threads = cpucores()

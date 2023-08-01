@@ -12,9 +12,23 @@ function instead of distance-based weights.
 
 ## Parameters
 
-* `neighbors` - Number of neighbors (default to all the data)
-* `distance`  - A distance from Distances.jl (default to `Euclidean()`)
-* `weightfun` - Weighting function (default to `exp(-3*h^2/2)`)
+* `minneighbors` - Minimum number of neighbors (default to `1`)
+* `maxneighbors` - Maximum number of neighbors (default to `nothing`)
+* `neighborhood` - Search neighborhood (default to `nothing`)
+* `distance`     - A distance from Distances.jl (default to `Euclidean()`)
+* `weightfun`    - Weighting function (default to `exp(-3 * h^2)`)
+
+The `maxneighbors` option can be used to perform locally weighted regression
+with a subset of measurements per estimation location. If `maxneighbors`
+is not provided, then all measurements are used.
+
+Two `neighborhood` search methods are available:
+
+* If a `neighborhood` is provided, local estimation is performed 
+  by sliding the `neighborhood` in the domain.
+
+* If a `neighborhood` is not provided, the estimation is performed 
+  using `maxneighbors` nearest neighbors according to `distance`.
 
 ### References
 
@@ -36,7 +50,9 @@ function instead of distance-based weights.
   assuming Gaussian residuals. 
 """
 @estimsolver LWR begin
-  @param neighbors = nothing
+  @param minneighbors = 1
+  @param maxneighbors = nothing
+  @param neighborhood = nothing
   @param distance = Euclidean()
   @param weightfun = h -> exp(-3 * h^2)
 end
@@ -47,8 +63,6 @@ function solve(problem::EstimationProblem, solver::LWR)
   dtable = values(pdata)
   pdomain = domain(problem)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
   # result for each variable
   μs = []
   σs = []
@@ -57,9 +71,6 @@ function solve(problem::EstimationProblem, solver::LWR)
     for var in covars.names
       # get user parameters
       varparams = covars.params[(var,)]
-
-      # determine value type
-      V = mactypeof[var]
 
       # retrieve non-missing data
       dcols = Tables.columns(dtable)
@@ -70,26 +81,27 @@ function solve(problem::EstimationProblem, solver::LWR)
       𝒯 = values(𝒮)
       n = nelements(𝒟)
 
-      # determine number of nearest neighbors to use
-      k = isnothing(varparams.neighbors) ? n : varparams.neighbors
+      # retrieve solver params
+      minneighbors = varparams.minneighbors
+      maxneighbors = varparams.maxneighbors
+      neighborhood = varparams.neighborhood
+      distance = varparams.distance
+      weightfun = varparams.weightfun
 
-      # determine distance type
-      D = varparams.distance
-
-      # weight function
-      w = varparams.weightfun
+      nmin = minneighbors
+      nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
 
       @assert n > 0 "estimation requires data"
+      @assert nmin ≤ nmax "invalid min/max number of neighbors"
 
-      @assert k ≤ n "invalid number of neighbors"
+      # determine bounded search method
+      bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
-      # fit search tree
+      # pre-allocate memory for neighbors
+      neighbors = Vector{Int}(undef, nmax)
+
+      # pre-compute the centroid coordinates
       X = [coordinates(centroid(𝒟, i)) for i in 1:n]
-      if D isa NearestNeighbors.MinkowskiMetric
-        tree = KDTree(X, D)
-      else
-        tree = BallTree(X, D)
-      end
 
       # adjust unit
       cols = Tables.columns(𝒯)
@@ -99,25 +111,35 @@ function solve(problem::EstimationProblem, solver::LWR)
       # estimation loop
       inds = traverse(pdomain, LinearPath())
       pred = map(inds) do ind
-        x = coordinates(centroid(pdomain, ind))
+        # centroid of estimation
+        center = centroid(pdomain, ind)
 
-        # find neighbors
-        is, ds = knn(tree, x, k)
-        δs = ds ./ maximum(ds)
+        # find neighbors with data
+        nneigh = search!(neighbors, center, bsearcher)
 
-        # weighted least-squares
-        Wₗ = Diagonal(w.(δs))
-        Xₗ = [ones(eltype(x), k) reduce(hcat, X[is])']
-        zₗ = view(z, is)
-        θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ
+        # skip if there are too few neighbors
+        if nneigh < nmin
+          missing, missing
+        else
+          x = coordinates(center)
+          is = view(neighbors, 1:nneigh)
+          ds = [distance(x, X[i]) for i in is]
+          δs = ds ./ maximum(ds)
 
-        # linear combination of response values
-        xₒ = [one(eltype(x)); x]
-        ẑₒ = θₗ ⋅ xₒ
-        rₗ = Wₗ * Xₗ * (Xₗ' * Wₗ * Xₗ \ xₒ)
-        r̂ₒ = norm(rₗ)
+          # weighted least-squares
+          Wₗ = Diagonal(weightfun.(δs))
+          Xₗ = [ones(eltype(x), nneigh) reduce(hcat, X[is])']
+          zₗ = view(z, is)
+          θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ
 
-        ẑₒ, r̂ₒ
+          # linear combination of response values
+          xₒ = [one(eltype(x)); x]
+          ẑₒ = θₗ ⋅ xₒ
+          rₗ = Wₗ * Xₗ * (Xₗ' * Wₗ * Xₗ \ xₒ)
+          r̂ₒ = norm(rₗ)
+
+          ẑₒ, r̂ₒ
+        end
       end
 
       varμ = first.(pred)

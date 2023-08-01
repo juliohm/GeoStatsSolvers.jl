@@ -13,9 +13,23 @@ locations.
 
 ## Parameters
 
-* `neighbors` - Number of neighbors (default to all the data)
-* `distance`  - A distance defined in Distances.jl (default to `Euclidean()`)
-* `power`     - Power of the distances (default to `1`)
+* `minneighbors` - Minimum number of neighbors (default to `1`)
+* `maxneighbors` - Maximum number of neighbors (default to `nothing`)
+* `neighborhood` - Search neighborhood (default to `nothing`)
+* `distance`     - A distance defined in Distances.jl (default to `Euclidean()`)
+* `power`        - Power of the distances (default to `1`)
+
+The `maxneighbors` option can be used to perform inverse distance weighting
+with a subset of measurements per estimation location. If `maxneighbors`
+is not provided, then all measurements are used.
+
+Two `neighborhood` search methods are available:
+
+* If a `neighborhood` is provided, local estimation is performed 
+  by sliding the `neighborhood` in the domain.
+
+* If a `neighborhood` is not provided, the estimation is performed 
+  using `maxneighbors` nearest neighbors according to `distance`.
 
 ### References
 
@@ -32,7 +46,9 @@ Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced d
   for qualitative purposes.
 """
 @estimsolver IDW begin
-  @param neighbors = nothing
+  @param minneighbors = 1
+  @param maxneighbors = nothing
+  @param neighborhood = nothing
   @param distance = Euclidean()
   @param power = 1
 end
@@ -43,8 +59,6 @@ function solve(problem::EstimationProblem, solver::IDW)
   dtable = values(pdata)
   pdomain = domain(problem)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
   # result for each variable
   μs = []
   σs = []
@@ -53,9 +67,6 @@ function solve(problem::EstimationProblem, solver::IDW)
     for var in covars.names
       # get user parameters
       varparams = covars.params[(var,)]
-
-      # determine value type
-      V = mactypeof[var]
 
       # retrieve non-missing data
       dcols = Tables.columns(dtable)
@@ -66,28 +77,28 @@ function solve(problem::EstimationProblem, solver::IDW)
       𝒯 = values(𝒮)
       n = nelements(𝒟)
 
-      # determine number of nearest neighbors to use
-      k = isnothing(varparams.neighbors) ? n : varparams.neighbors
-
-      # determine distance type
-      D = varparams.distance
-
-      # determine power of distances
-      p = varparams.power
+      # retrieve solver params
+      minneighbors = varparams.minneighbors
+      maxneighbors = varparams.maxneighbors
+      neighborhood = varparams.neighborhood
+      distance = varparams.distance
+      power = varparams.power
+      
+      nmin = minneighbors
+      nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
 
       @assert n > 0 "estimation requires data"
+      @assert power > 0 "power must be positive"
+      @assert nmin ≤ nmax "invalid min/max number of neighbors"
 
-      @assert k ≤ n "invalid number of neighbors"
+      # determine bounded search method
+      bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
-      @assert p > 0 "power must be positive"
+      # pre-allocate memory for neighbors
+      neighbors = Vector{Int}(undef, nmax)
 
-      # fit search tree
+      # pre-compute the centroid coordinates
       X = [coordinates(centroid(𝒟, i)) for i in 1:n]
-      if D isa NearestNeighbors.MinkowskiMetric
-        tree = KDTree(X, D)
-      else
-        tree = BallTree(X, D)
-      end
 
       # adjust unit
       cols = Tables.columns(𝒯)
@@ -97,23 +108,35 @@ function solve(problem::EstimationProblem, solver::IDW)
       # estimation loop
       inds = traverse(pdomain, LinearPath())
       pred = map(inds) do ind
-        x = coordinates(centroid(pdomain, ind))
-        is, ds = knn(tree, x, k)
-        ws = 1 ./ ds .^ p
-        Σw = sum(ws)
+        # centroid of estimation
+        center = centroid(pdomain, ind)
 
-        if isinf(Σw) # some distance is zero?
-          j = findfirst(iszero, ds)
-          μ = z[is[j]]
-          σ = zero(eltype(ds))
+        # find neighbors with data
+        nneigh = search!(neighbors, center, bsearcher)
+
+        # skip if there are too few neighbors
+        if nneigh < nmin
+          missing, missing
         else
-          ws /= Σw
-          vs = view(z, is)
-          μ = sum(ws[i] * vs[i] for i in eachindex(vs))
-          σ = minimum(ds)
-        end
+          x = coordinates(center)
+          is = view(neighbors, 1:nneigh)
+          ds = [distance(x, X[i]) for i in is]
+          ws = 1 ./ ds .^ power
+          Σw = sum(ws)
 
-        μ, σ
+          if isinf(Σw) # some distance is zero?
+            j = findfirst(iszero, ds)
+            μ = z[is[j]]
+            σ = zero(eltype(ds))
+          else
+            ws /= Σw
+            vs = view(z, is)
+            μ = sum(ws[i] * vs[i] for i in eachindex(vs))
+            σ = minimum(ds)
+          end
+
+          μ, σ
+        end
       end
 
       varμ = first.(pred)

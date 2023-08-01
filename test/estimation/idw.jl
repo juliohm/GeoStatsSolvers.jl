@@ -1,19 +1,19 @@
 @testset "IDW" begin
   # basic problem
-  geodata = georef((z=[1.0, 0.0, 1.0],), [25.0 50.0 75.0; 25.0 75.0 50.0])
+  geodata = georef((; z=[1.0, 0.0, 1.0]), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(100, 100)
   problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:z => (neighbors=3,))
+  solver = IDW(:z => (; maxneighbors=3))
 
   sol = solve(problem, solver)
 
   # haversine distance
-  geodata = georef((z=[4.0, -1.0, 3.0],), [50.0 100.0 200.0; -30.0 30.0 10.0])
+  geodata = georef((; z=[4.0, -1.0, 3.0]), [50.0 100.0 200.0; -30.0 30.0 10.0])
   domain = CartesianGrid((1.0, -89.0), (359.0, 89.0), dims=(200, 100))
   problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:z => (neighbors=3, distance=Haversine(1.0)))
+  solver = IDW(:z => (maxneighbors=3, distance=Haversine(1.0)))
 
   sol = solve(problem, solver)
 
@@ -35,7 +35,7 @@
   # COMPOSITIONAL DATA
   # -------------------
 
-  table = (z=[Composition(0.1, 0.2), Composition(0.3, 0.4), Composition(0.5, 0.6)],)
+  table = (; z=[Composition(0.1, 0.2), Composition(0.3, 0.4), Composition(0.5, 0.6)])
   coord = [(25.0, 25.0), (50.0, 75.0), (75.0, 50.0)]
   data = georef(table, coord)
   grid = CartesianGrid(100, 100)
