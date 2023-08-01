@@ -23,6 +23,7 @@ default with the `variogram` only.
 * `maxneighbors` - Maximum number of neighbors (default to `nothing`)
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
+* `path`         - The path algorithm used to iterate over the domain (default to `LinearPath()`)
 
 The `maxneighbors` option can be used to perform approximate Kriging
 with a subset of measurements per estimation location. If `maxneighbors`
@@ -69,6 +70,7 @@ julia> Kriging()
   @param maxneighbors = nothing
   @param neighborhood = nothing
   @param distance = Euclidean()
+  @param path = LinearPath()
 end
 
 function preprocess(problem::EstimationProblem, solver::Kriging)
@@ -114,14 +116,11 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       # determine bounded search method
       bsearcher = searcher_ui(vdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
 
+      # determine the path algorithm
+      path = varparams.path
+
       # save preprocessed input
-      preproc[var] = (
-        samples=samples,
-        estimator=estimator,
-        minneighbors=minneighbors,
-        maxneighbors=maxneighbors,
-        bsearcher=bsearcher
-      )
+      preproc[var] = (; samples, estimator, minneighbors, maxneighbors, bsearcher, path)
     end
   end
 
@@ -171,12 +170,13 @@ function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
 
   # unpack preprocessed parameters
   estimator = preproc[var].estimator
+  path = preproc[var].path
 
   # fit estimator once
   krig = fit(estimator, pdata)
 
   # predict everywhere
-  inds = traverse(pdomain, LinearPath())
+  inds = traverse(pdomain, path)
   pred = [predict(krig, var, pdomain[ind]) for ind in inds]
 
   varμ = first.(pred)
@@ -195,12 +195,13 @@ function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
   minneighbors = preproc[var].minneighbors
   maxneighbors = preproc[var].maxneighbors
   bsearcher = preproc[var].bsearcher
+  path = preproc[var].path
 
   # pre-allocate memory for neighbors
   neighbors = Vector{Int}(undef, maxneighbors)
 
   # predict location by location
-  inds = traverse(pdomain, LinearPath())
+  inds = traverse(pdomain, path)
   pred = map(inds) do ind
     # centroid of estimation
     center = centroid(pdomain, ind)

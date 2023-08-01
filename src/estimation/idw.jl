@@ -18,6 +18,7 @@ locations.
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - A distance defined in Distances.jl (default to `Euclidean()`)
 * `power`        - Power of the distances (default to `1`)
+* `path`         - The path algorithm used to iterate over the domain (default to `LinearPath()`)
 
 The `maxneighbors` option can be used to perform inverse distance weighting
 with a subset of measurements per estimation location. If `maxneighbors`
@@ -51,6 +52,7 @@ Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced d
   @param neighborhood = nothing
   @param distance = Euclidean()
   @param power = 1
+  @param path = LinearPath()
 end
 
 function solve(problem::EstimationProblem, solver::IDW)
@@ -83,6 +85,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       neighborhood = varparams.neighborhood
       distance = varparams.distance
       power = varparams.power
+      path = varparams.path
 
       nmin = minneighbors
       nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
@@ -106,7 +109,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       z = uadjust(vals)
 
       # estimation loop
-      inds = traverse(pdomain, LinearPath())
+      inds = traverse(pdomain, path)
       pred = map(inds) do ind
         # centroid of estimation
         center = centroid(pdomain, ind)
