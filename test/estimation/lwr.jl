@@ -27,6 +27,15 @@
   sol₃ = solve(problem, solver₃)
   sol₄ = solve(problem, solver₄)
 
+  # custom path algorithm
+  sdata = georef((; z=[1.0, 0.0, 1.0, 0.0]), [25.0 50.0 75.0 75.0; 25.0 75.0 50.0 25.0])
+  sdomain = CartesianGrid(100, 100)
+  problem = EstimationProblem(sdata, sdomain, :z)
+
+  solver = LWR(:z => (maxneighbors=3, path=MultiGridPath()))
+
+  sol = solve(problem, solver)
+
   # Haversine distance
   A = readdlm(joinpath(datadir, "coords.txt"))
   x, y, z = A[:, 1], A[:, 2], A[:, 3]

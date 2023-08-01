@@ -69,6 +69,24 @@
   @test isapprox(S[inds[50, 75]], 0.0, atol=1e-3)
   @test isapprox(S[inds[75, 50]], 1.0, atol=1e-3)
 
+  # -------------------------
+  # 2D PROBLEM (CUSTOM PATH)
+  # -------------------------
+
+  problem = EstimationProblem(data2D, grid2D, :z)
+
+  solver = Kriging(
+    :z => (
+      variogram=GaussianVariogram(range=35.0, nugget=0.0),
+      maxneighbors=3,
+      neighborhood=MetricBall(100.0),
+      path=MultiGridPath()
+    )
+  )
+
+  Random.seed!(2021)
+  sol = solve(problem, solver)
+
   # units
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
