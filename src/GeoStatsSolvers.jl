@@ -12,7 +12,6 @@ using KrigingEstimators
 using Tables
 using Distributions
 using TableTransforms
-using NearestNeighbors
 using Distances: Euclidean
 using Bessels: gamma
 using Unitful: Units, AffineUnits
