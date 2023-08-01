@@ -26,7 +26,7 @@ default with the `variogram` only.
 
 The `maxneighbors` option can be used to perform approximate Kriging
 with a subset of measurements per estimation location. If `maxneighbors`
-is not provided, then all measurements will be used.
+is not provided, then all measurements are used.
 
 Two `neighborhood` search methods are available:
 

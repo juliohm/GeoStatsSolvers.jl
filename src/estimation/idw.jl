@@ -21,7 +21,7 @@ locations.
 
 The `maxneighbors` option can be used to perform inverse distance weighting
 with a subset of measurements per estimation location. If `maxneighbors`
-is not provided, then all measurements will be used.
+is not provided, then all measurements are used.
 
 Two `neighborhood` search methods are available:
 
@@ -79,21 +79,23 @@ function solve(problem::EstimationProblem, solver::IDW)
 
       # retrieve solver params
       minneighbors = varparams.minneighbors
-      maxneighbors = isnothing(varparams.maxneighbors) ? n : varparams.maxneighbors
+      maxneighbors = varparams.maxneighbors
       neighborhood = varparams.neighborhood
       distance = varparams.distance
       power = varparams.power
+      
+      nmin = minneighbors
+      nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
 
       @assert n > 0 "estimation requires data"
       @assert power > 0 "power must be positive"
-      @assert maxneighbors ≤ n "invalid number of maxneighbors"
-      @assert minneighbors < maxneighbors "invalid number of minneighbors"
+      @assert nmin ≤ nmax "invalid min/max number of neighbors"
 
       # determine bounded search method
       bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
       # pre-allocate memory for neighbors
-      neighbors = Vector{Int}(undef, maxneighbors)
+      neighbors = Vector{Int}(undef, nmax)
 
       # pre-compute the centroid coordinates
       X = [coordinates(centroid(𝒟, i)) for i in 1:n]
@@ -113,7 +115,7 @@ function solve(problem::EstimationProblem, solver::IDW)
         nneigh = search!(neighbors, center, bsearcher)
 
         # skip if there are too few neighbors
-        if nneigh < minneighbors
+        if nneigh < nmin
           missing, missing
         else
           x = coordinates(center)
