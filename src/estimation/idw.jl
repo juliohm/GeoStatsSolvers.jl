@@ -83,7 +83,7 @@ function solve(problem::EstimationProblem, solver::IDW)
       neighborhood = varparams.neighborhood
       distance = varparams.distance
       power = varparams.power
-      
+
       nmin = minneighbors
       nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
 
