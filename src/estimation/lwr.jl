@@ -17,6 +17,7 @@ function instead of distance-based weights.
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - A distance from Distances.jl (default to `Euclidean()`)
 * `weightfun`    - Weighting function (default to `exp(-3 * h^2)`)
+* `path`         - The path algorithm used to iterate over the domain (default to `LinearPath()`)
 
 The `maxneighbors` option can be used to perform locally weighted regression
 with a subset of measurements per estimation location. If `maxneighbors`
@@ -55,6 +56,7 @@ Two `neighborhood` search methods are available:
   @param neighborhood = nothing
   @param distance = Euclidean()
   @param weightfun = h -> exp(-3 * h^2)
+  @param path = LinearPath()
 end
 
 function solve(problem::EstimationProblem, solver::LWR)
@@ -87,6 +89,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       neighborhood = varparams.neighborhood
       distance = varparams.distance
       weightfun = varparams.weightfun
+      path = varparams.path
 
       nmin = minneighbors
       nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
@@ -109,7 +112,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       z = uadjust(vals)
 
       # estimation loop
-      inds = traverse(pdomain, LinearPath())
+      inds = traverse(pdomain, path)
       pred = map(inds) do ind
         # centroid of estimation
         center = centroid(pdomain, ind)
