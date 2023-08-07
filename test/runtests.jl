@@ -2,6 +2,7 @@ using GeoStatsSolvers
 using Meshes
 using GeoStatsBase
 using Variography
+using KrigingEstimators
 using Distances
 using Distributions
 using CategoricalArrays
@@ -19,6 +20,7 @@ datadir = joinpath(@__DIR__, "data")
 
 # list of tests
 testfiles = [
+  "ui.jl",
   "estimation/idw.jl",
   "estimation/lwr.jl",
   "estimation/krig.jl",

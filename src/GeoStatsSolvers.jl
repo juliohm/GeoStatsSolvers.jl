@@ -30,6 +30,7 @@ const MI = MLJModelInterface
 import GeoStatsBase: preprocess, solve, solvesingle
 
 include("utils.jl")
+include("ui.jl")
 
 include("estimation/idw.jl")
 include("estimation/lwr.jl")
