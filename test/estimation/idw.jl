@@ -8,6 +8,15 @@
 
   sol = solve(problem, solver)
 
+  # custom path algorithm
+  geodata = georef((; z=[1.0, 0.0, 1.0]), [25.0 50.0 75.0; 25.0 75.0 50.0])
+  domain = CartesianGrid(100, 100)
+  problem = EstimationProblem(geodata, domain, :z)
+
+  solver = IDW(:z => (maxneighbors=3, path=MultiGridPath()))
+
+  sol = solve(problem, solver)
+
   # haversine distance
   geodata = georef((; z=[4.0, -1.0, 3.0]), [50.0 100.0 200.0; -30.0 30.0 10.0])
   domain = CartesianGrid((1.0, -89.0), (359.0, 89.0), dims=(200, 100))
