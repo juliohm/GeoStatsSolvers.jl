@@ -11,22 +11,18 @@ end-user inputs such as `maxneighbors`, `metric` and `neighborhood`.
 function searcher_ui(domain, maxneighbors, metric, neighborhood)
   # number of domain elements
   nelem = nelements(domain)
+  nmax = isnothing(maxneighbors) ? nelem : maxneighbors
 
-  if isnothing(maxneighbors) || maxneighbors == nelem
-    # global search with all elements
-    GlobalSearch(domain)
+  if nmax > nelem
+    throw(ArgumentError("maxneighbors must be smaller than number of elements"))
+  end
+
+  if isnothing(neighborhood)
+    # nearest neighbor search with a metric
+    KNearestSearch(domain, nmax; metric)
   else
-    if maxneighbors > nelem
-      throw(ArgumentError("maxneighbors must be smaller than number of elements"))
-    end
-
-    if isnothing(neighborhood)
-      # nearest neighbor search with a metric
-      KNearestSearch(domain, maxneighbors, metric=metric)
-    else
-      # neighbor search with ball neighborhood
-      KBallSearch(domain, maxneighbors, neighborhood)
-    end
+    # neighbor search with ball neighborhood
+    KBallSearch(domain, nmax, neighborhood)
   end
 end
 
@@ -37,11 +33,11 @@ Return the appropriate Kriging estimator for the `domain` based on
 end-user inputs such as `variogram`, `mean`, `degree` and `drifts`.
 """
 function kriging_ui(domain, variogram, mean, degree, drifts)
-  if drifts ≠ nothing
+  if !isnothing(drifts)
     ExternalDriftKriging(variogram, drifts)
-  elseif degree ≠ nothing
+  elseif !isnothing(degree)
     UniversalKriging(variogram, degree, embeddim(domain))
-  elseif mean ≠ nothing
+  elseif !isnothing(mean)
     SimpleKriging(variogram, mean)
   else
     OrdinaryKriging(variogram)

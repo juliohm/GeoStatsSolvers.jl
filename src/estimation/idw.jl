@@ -115,7 +115,7 @@ function solve(problem::EstimationProblem, solver::IDW)
         center = centroid(pdomain, ind)
 
         # find neighbors with data
-        nneigh = _searchdists!(neighbors, distances, center, distance, 𝒟, bsearcher)
+        nneigh = searchdists!(neighbors, distances, center, bsearcher)
 
         # skip if there are too few neighbors
         if nneigh < nmin

@@ -118,7 +118,7 @@ function solve(problem::EstimationProblem, solver::LWR)
         center = centroid(pdomain, ind)
 
         # find neighbors with data
-        nneigh = _searchdists!(neighbors, distances, center, distance, 𝒟, bsearcher)
+        nneigh = searchdists!(neighbors, distances, center, bsearcher)
 
         # skip if there are too few neighbors
         if nneigh < nmin
@@ -130,7 +130,7 @@ function solve(problem::EstimationProblem, solver::LWR)
           δs = ds ./ maximum(ds)
 
           # weighted least-squares
-          X = reduce(hcat, coordinates(centroid(𝒟, i)) for i in is)
+          X = mapreduce(i -> coordinates(centroid(𝒟, i)), hcat, is)
           Wₗ = Diagonal(weightfun.(δs))
           Xₗ = [ones(eltype(x), nneigh) X']
           zₗ = view(z, is)
