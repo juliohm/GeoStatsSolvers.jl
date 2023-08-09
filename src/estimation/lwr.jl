@@ -103,8 +103,8 @@ function solve(problem::EstimationProblem, solver::LWR)
       # pre-allocate memory for neighbors
       neighbors = Vector{Int}(undef, nmax)
 
-      # pre-compute the centroid coordinates
-      X = [coordinates(centroid(𝒟, i)) for i in 1:n]
+      # pre-allocate memory for distances
+      distances = Vector{coordtype(𝒟)}(undef, nmax)
 
       # adjust unit
       cols = Tables.columns(𝒯)
@@ -118,7 +118,7 @@ function solve(problem::EstimationProblem, solver::LWR)
         center = centroid(pdomain, ind)
 
         # find neighbors with data
-        nneigh = search!(neighbors, center, bsearcher)
+        nneigh = searchdists!(neighbors, distances, center, bsearcher)
 
         # skip if there are too few neighbors
         if nneigh < nmin
@@ -126,12 +126,13 @@ function solve(problem::EstimationProblem, solver::LWR)
         else
           x = coordinates(center)
           is = view(neighbors, 1:nneigh)
-          ds = [distance(x, X[i]) for i in is]
+          ds = view(distances, 1:nneigh)
           δs = ds ./ maximum(ds)
 
           # weighted least-squares
+          X = mapreduce(i -> coordinates(centroid(𝒟, i)), hcat, is)
           Wₗ = Diagonal(weightfun.(δs))
-          Xₗ = [ones(eltype(x), nneigh) reduce(hcat, X[is])']
+          Xₗ = [ones(eltype(x), nneigh) X']
           zₗ = view(z, is)
           θₗ = Xₗ' * Wₗ * Xₗ \ Xₗ' * Wₗ * zₗ
 

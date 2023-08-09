@@ -10,8 +10,8 @@
   method = GeoStatsSolvers.searcher_ui(domain, 2, nothing, MetricBall(1.0))
   @test method isa KBallSearch
   @test maxneighbors(method) == 2
-  method = GeoStatsSolvers.searcher_ui(domain, nothing, nothing, nothing)
-  @test method isa GlobalSearch
+  method = GeoStatsSolvers.searcher_ui(domain, nothing, Euclidean(), nothing)
+  @test method isa KNearestSearch
   @test maxneighbors(method) == 3
 
   @test_throws ArgumentError GeoStatsSolvers.searcher_ui(domain, 5, Euclidean(), nothing)
