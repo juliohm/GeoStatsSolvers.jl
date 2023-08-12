@@ -72,7 +72,7 @@ function preprocess(problem::SimulationProblem, solver::SGS)
       marginal = Normal(μ, σ)
 
       # determine simulation path
-      path = isnothing(varparams.path) ? RandomPath() : varparams.path
+      path = varparams.path
 
       # determine data mapping
       mapping = varparams.mapping

@@ -111,18 +111,20 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
     # keep track of simulated locations
     simulated = falses(nelements(pdomain))
     if hasdata(problem)
-      vals = getproperty(pdata, var)
-      for (loc, datloc) in mappings
-        realization[loc] = vals[datloc]
-        simulated[loc] = true
+      table = values(pdata)
+      cols = Tables.columns(table)
+      vals = Tables.getcolumn(cols, var)
+      for (ind, datind) in mappings
+        realization[ind] = vals[datind]
+        simulated[ind] = true
       end
     end
 
     # simulation loop
-    for location in traverse(pdomain, path)
-      if !simulated[location]
+    for ind in traverse(pdomain, path)
+      if !simulated[ind]
         # coordinates of neighborhood center
-        pₒ = centroid(pdomain, location)
+        pₒ = centroid(pdomain, ind)
 
         # find neighbors with previously simulated values
         nneigh = search!(neighbors, pₒ, bsearcher, mask=simulated)
@@ -130,7 +132,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
         # choose between marginal and conditional distribution
         if nneigh < minneighbors
           # draw from marginal
-          realization[location] = rand(rng, marginal)
+          realization[ind] = rand(rng, marginal)
         else
           # final set of neighbors
           nview = view(neighbors, 1:nneigh)
@@ -145,21 +147,21 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
 
           if status(fitted)
             # retrieve element
-            uₒ = pdomain[location]
+            uₒ = pdomain[ind]
 
             # local conditional distribution
             conditional = predictprob(fitted, var, uₒ)
 
             # draw from conditional
-            realization[location] = rand(rng, conditional)
+            realization[ind] = rand(rng, conditional)
           else
             # draw from marginal
-            realization[location] = rand(rng, marginal)
+            realization[ind] = rand(rng, marginal)
           end
         end
 
         # mark location as simulated and continue
-        simulated[location] = true
+        simulated[ind] = true
       end
     end
 
