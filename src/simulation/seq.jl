@@ -135,15 +135,18 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
           realization[ind] = rand(rng, marginal)
         else
           # final set of neighbors
-          nview = view(neighbors, 1:nneigh)
+          ninds = view(neighbors, 1:nneigh)
 
-          # view neighborhood with data
-          tab = (; var => view(realization, nview))
-          dom = view(pset, nview)
-          𝒟 = georef(tab, dom)
+          # neighborhood with data
+          𝒩 = let
+            dom = view(pset, ninds)
+            val = view(realization, ninds)
+            tab = (; var => val)
+            georef(tab, dom)
+          end
 
           # fit estimator to data
-          fitted = fit(estimator, 𝒟)
+          fitted = fit(estimator, 𝒩)
 
           if status(fitted)
             # retrieve element
