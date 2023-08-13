@@ -90,8 +90,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
   pdata = data(problem)
   pdomain = domain(problem)
 
-  # compute variogram between centroids
-  pset = PointSet(centroid.(pdomain))
+  pset = PointSet([centroid(pdomain, ind) for ind in 1:nelements(pdomain)])
 
   mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
 
@@ -123,11 +122,8 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
     # simulation loop
     for ind in traverse(pdomain, path)
       if !simulated[ind]
-        # coordinates of neighborhood center
-        pₒ = centroid(pdomain, ind)
-
         # find neighbors with previously simulated values
-        nneigh = search!(neighbors, pₒ, bsearcher, mask=simulated)
+        nneigh = search!(neighbors, pset[ind], bsearcher, mask=simulated)
 
         # choose between marginal and conditional distribution
         if nneigh < minneighbors
@@ -149,11 +145,8 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
           fitted = fit(estimator, 𝒩)
 
           if status(fitted)
-            # retrieve element
-            uₒ = pdomain[ind]
-
             # local conditional distribution
-            conditional = predictprob(fitted, var, uₒ)
+            conditional = predictprob(fitted, var, pset[ind])
 
             # draw from conditional
             realization[ind] = rand(rng, conditional)
