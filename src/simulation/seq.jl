@@ -101,7 +101,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
     # determine value type
     V = mactypeof[var]
 
-    # pre-allocate memory for result
+    # pre-allocate memory for realization
     realization = Vector{V}(undef, nelements(pdomain))
 
     # pre-allocate memory for neighbors

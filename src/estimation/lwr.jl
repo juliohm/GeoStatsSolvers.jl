@@ -98,7 +98,7 @@ function solve(problem::EstimationProblem, solver::LWR)
       @assert nmin ≤ nmax "invalid min/max number of neighbors"
 
       # determine bounded search method
-      bsearcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
+      searcher = searcher_ui(𝒟, maxneighbors, distance, neighborhood)
 
       # pre-allocate memory for neighbors
       neighbors = Vector{Int}(undef, nmax)
@@ -118,7 +118,7 @@ function solve(problem::EstimationProblem, solver::LWR)
         center = centroid(pdomain, ind)
 
         # find neighbors with data
-        nneigh = searchdists!(neighbors, distances, center, bsearcher)
+        nneigh = searchdists!(neighbors, distances, center, searcher)
 
         # skip if there are too few neighbors
         if nneigh < nmin

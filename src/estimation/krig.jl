@@ -114,13 +114,13 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
       maxneighbors = varparams.maxneighbors
 
       # determine bounded search method
-      bsearcher = searcher_ui(vdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
+      searcher = searcher_ui(vdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
 
       # determine the path algorithm
       path = varparams.path
 
       # save preprocessed input
-      preproc[var] = (; samples, estimator, minneighbors, maxneighbors, bsearcher, path)
+      preproc[var] = (; samples, estimator, minneighbors, maxneighbors, searcher, path)
     end
   end
 
@@ -194,7 +194,7 @@ function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
   estimator = preproc[var].estimator
   minneighbors = preproc[var].minneighbors
   maxneighbors = preproc[var].maxneighbors
-  bsearcher = preproc[var].bsearcher
+  searcher = preproc[var].searcher
   path = preproc[var].path
 
   # pre-allocate memory for neighbors
@@ -207,7 +207,7 @@ function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
     center = centroid(pdomain, ind)
 
     # find neighbors with data
-    nneigh = search!(neighbors, center, bsearcher)
+    nneigh = search!(neighbors, center, searcher)
 
     # skip if there are too few neighbors
     if nneigh < minneighbors
