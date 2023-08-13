@@ -57,7 +57,7 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
       maxneighbors = varparams.maxneighbors
 
       # determine bounded search method
-      bsearcher = searcher_ui(pdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
+      searcher = searcher_ui(pdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
 
       # determine data mappings
       vmappings = if hasdata(problem)
@@ -73,7 +73,7 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
         maxneighbors=maxneighbors,
         marginal=varparams.marginal,
         path=varparams.path,
-        bsearcher=bsearcher,
+        searcher=searcher,
         mappings=vmappings
       )
     end
@@ -96,7 +96,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
 
   varreals = map(covars.names) do var
     # unpack preprocessed parameters
-    estimator, minneighbors, maxneighbors, marginal, path, bsearcher, mappings = preproc[var]
+    estimator, minneighbors, maxneighbors, marginal, path, searcher, mappings = preproc[var]
 
     # determine value type
     V = mactypeof[var]
@@ -122,38 +122,28 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
     # simulation loop
     for ind in traverse(pdomain, path)
       if !simulated[ind]
-        # find neighbors with previously simulated values
-        nneigh = search!(neighbors, pset[ind], bsearcher, mask=simulated)
+        # search neighbors with simulated data
+        nneigh = search!(neighbors, pset[ind], searcher, mask=simulated)
 
-        # choose between marginal and conditional distribution
         if nneigh < minneighbors
           # draw from marginal
           realization[ind] = rand(rng, marginal)
         else
-          # final set of neighbors
-          ninds = view(neighbors, 1:nneigh)
-
           # neighborhood with data
-          𝒩 = let
-            dom = view(pset, ninds)
-            val = view(realization, ninds)
+          neigh = let
+            ijk = view(neighbors, 1:nneigh)
+            dom = view(pset, ijk)
+            val = view(realization, ijk)
             tab = (; var => val)
             georef(tab, dom)
           end
 
-          # fit estimator to data
-          fitted = fit(estimator, 𝒩)
+          # fit distribution estimator
+          fitted = fit(estimator, neigh)
 
-          if status(fitted)
-            # local conditional distribution
-            conditional = predictprob(fitted, var, pset[ind])
-
-            # draw from conditional
-            realization[ind] = rand(rng, conditional)
-          else
-            # draw from marginal
-            realization[ind] = rand(rng, marginal)
-          end
+          # draw from conditional or marginal
+          distribution = status(fitted) ? predictprob(fitted, var, pset[ind]) : marginal
+          realization[ind] = rand(rng, distribution)
         end
 
         # mark location as simulated and continue
