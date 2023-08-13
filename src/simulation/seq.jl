@@ -142,7 +142,11 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
           fitted = fit(estimator, neigh)
 
           # draw from conditional or marginal
-          distribution = status(fitted) ? predictprob(fitted, var, pset[ind]) : marginal
+          distribution = if status(fitted)
+            predictprob(fitted, var, pset[ind])
+          else
+            marginal
+          end
           realization[ind] = rand(rng, distribution)
         end
 
