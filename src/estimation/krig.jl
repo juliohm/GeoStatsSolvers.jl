@@ -86,7 +86,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
   for covars in covariables(problem, solver)
     for var in covars.names
       # get user parameters
-      varparams = covars.params[(var,)]
+      varparams = covars.params[Set([var])]
 
       # adjust unit
       cols = Tables.columns(dtable)
@@ -137,7 +137,7 @@ function solve(problem::EstimationProblem, solver::Kriging)
   # results for each variable
   μs = []
   σs = []
-  for var in name.(variables(problem))
+  for var in keys(variables(problem))
     # maximum number of neighbors
     maxneighbors = preproc[var].maxneighbors
 

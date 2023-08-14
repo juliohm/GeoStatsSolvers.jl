@@ -27,7 +27,7 @@ meshes and is adequate for highly curved domains (e.g. surfaces).
 end
 
 function preprocess(problem::SimulationProblem, solver::SPDEGS)
-  hasdata(problem) && @error "conditional simulation is not implemented"
+  isnothing(data(problem)) || @error "conditional simulation is not implemented"
 
   # retrieve problem info
   𝒟 = domain(problem)
@@ -44,7 +44,7 @@ function preprocess(problem::SimulationProblem, solver::SPDEGS)
   for covars in covariables(problem, solver)
     for var in covars.names
       # get user parameters
-      varparams = covars.params[(var,)]
+      varparams = covars.params[Set([var])]
 
       # determine sill and range
       σ = varparams.sill
@@ -83,10 +83,8 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::SPD
   𝒟 = domain(problem)
   n = nvertices(𝒟)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
   # target variables
-  vars = covars.names
+  vars = collect(covars.names)
 
   # simulation at vertices
   varreal = map(vars) do var
@@ -94,7 +92,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::SPD
     L = preproc[var].L
 
     # determine value type
-    V = mactypeof[var]
+    V = variables(problem)[var]
 
     # perform simulation
     w = randn(rng, V, n)

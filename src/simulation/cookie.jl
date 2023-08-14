@@ -36,7 +36,7 @@ function solve(problem::SimulationProblem, solver::CookieCutter)
   preals = nreals(problem)
 
   # master variable
-  pvars = Dict(name(v) => mactype(v) for v in variables(problem))
+  pvars = variables(problem)
   mvars = targets(solver.master)
   @assert length(mvars) == 1 "one single variable must be specified in master solver"
   mvar = mvars[1]
@@ -44,11 +44,11 @@ function solve(problem::SimulationProblem, solver::CookieCutter)
   mtype = pvars[mvar]
 
   # other variables
-  ovars = Tuple(var => V for (var, V) in pvars if var ≠ mvar)
+  ovars = Tuple(var => V for (var, V) in pairs(pvars) if var ≠ mvar)
   @assert length(ovars) > 0 "cookie-cutter requires problem with more than one target variable"
 
   # define master and others problem
-  if hasdata(problem)
+  if !isnothing(pdata)
     mproblem = SimulationProblem(pdata, pdomain, mvar, preals)
     oproblem = SimulationProblem(pdata, pdomain, first.(ovars), preals)
   else

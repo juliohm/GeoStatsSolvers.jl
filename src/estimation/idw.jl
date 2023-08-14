@@ -68,7 +68,7 @@ function solve(problem::EstimationProblem, solver::IDW)
   for covars in covariables(problem, solver)
     for var in covars.names
       # get user parameters
-      varparams = covars.params[(var,)]
+      varparams = covars.params[Set([var])]
 
       # retrieve non-missing data
       dcols = Tables.columns(dtable)

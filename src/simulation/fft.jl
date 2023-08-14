@@ -50,7 +50,7 @@ can be passed to the underlying [`Kriging`](@ref) solver:
 """
 @simsolver FFTGS begin
   @param variogram = GaussianVariogram()
-  @param mean = 0
+  @param mean = 0.0
   @param minneighbors = 1
   @param maxneighbors = nothing
   @param neighborhood = nothing
@@ -61,6 +61,7 @@ end
 
 function preprocess(problem::SimulationProblem, solver::FFTGS)
   # retrieve problem info
+  pdata = data(problem)
   pdomain = domain(problem)
   pgrid, _ = unview(pdomain)
   dims = size(pgrid)
@@ -71,18 +72,16 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
   # number of threads in FFTW
   FFTW.set_num_threads(solver.threads)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
   # result of preprocessing
   preproc = Dict()
 
   for covars in covariables(problem, solver)
     for var in covars.names
       # get user parameters
-      varparams = covars.params[(var,)]
+      varparams = covars.params[Set([var])]
 
       # determine value type
-      V = mactypeof[var]
+      V = variables(problem)[var]
 
       # determine variogram model and mean
       γ = varparams.variogram
@@ -105,8 +104,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
 
       # perform Kriging in case of conditional simulation
       z̄, krig, dinds = nothing, nothing, nothing
-      if hasdata(problem)
-        pdata = data(problem)
+      if !isnothing(pdata)
         dtable = values(pdata)
         ddomain = domain(pdata)
         if var ∈ Tables.schema(dtable).names
@@ -153,14 +151,12 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
   pgrid, inds = unview(pdomain)
   dims = size(pgrid)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
-  varreal = map(covars.names) do var
+  varreal = map(collect(covars.names)) do var
     # unpack preprocessed parameters
     γ, μ, F, z̄, krig, dinds = preproc[var]
 
     # determine value type
-    V = mactypeof[var]
+    V = variables(problem)[var]
 
     # perturbation in frequency domain
     P = F .* exp.(im .* angle.(fft(rand(rng, V, dims))))

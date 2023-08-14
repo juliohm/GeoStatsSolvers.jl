@@ -21,11 +21,11 @@ and in case there are none, use a `marginal` distribution.
 * `maxneighbors` - Maximum number of neighbors (default to `10`)
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - Distance used to find nearest neighbors (default to `Euclidean()`)
-* `mapping`      - Data mapping method (default to `NearestMapping()`)
 
 ## Global parameters
 
-* `rng` - random number generator
+* `init` - Data initialization method (default to `NearestInit()`)
+* `rng`  - Random number generator (default to `Random.GLOBAL_RNG`)
 """
 @simsolver SeqSim begin
   @param estimator
@@ -35,13 +35,12 @@ and in case there are none, use a `marginal` distribution.
   @param maxneighbors = 10
   @param neighborhood = nothing
   @param distance = Euclidean()
-  @param mapping = NearestMapping()
+  @global init = NearestInit()
   @global rng = Random.GLOBAL_RNG
 end
 
 function preprocess(problem::SimulationProblem, solver::SeqSim)
   # retrieve problem info
-  pdata = data(problem)
   pdomain = domain(problem)
 
   # result of preprocessing
@@ -50,31 +49,28 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
   for covars in covariables(problem, solver)
     for var in covars.names
       # get user parameters
-      varparams = covars.params[(var,)]
+      varparams = covars.params[Set([var])]
 
-      # determine minimum/maximum number of neighbors
+      # extract paramaters
+      estimator = varparams.estimator
+      marginal = varparams.marginal
+      path = varparams.path
       minneighbors = varparams.minneighbors
       maxneighbors = varparams.maxneighbors
+      neighborhood = varparams.neighborhood
+      distance = varparams.distance
 
-      # determine bounded search method
-      searcher = searcher_ui(pdomain, varparams.maxneighbors, varparams.distance, varparams.neighborhood)
-
-      # determine data mappings
-      vmappings = if hasdata(problem)
-        map(pdata, pdomain, (var,), varparams.mapping)[var]
-      else
-        Dict{Int,Int}()
-      end
+      # determine search method
+      searcher = searcher_ui(pdomain, maxneighbors, distance, neighborhood)
 
       # save preprocessed input
       preproc[var] = (
-        estimator=varparams.estimator,
-        minneighbors=minneighbors,
-        maxneighbors=maxneighbors,
-        marginal=varparams.marginal,
-        path=varparams.path,
-        searcher=searcher,
-        mappings=vmappings
+        estimator,
+        marginal,
+        path,
+        minneighbors,
+        maxneighbors,
+        searcher=searcher
       )
     end
   end
@@ -83,41 +79,31 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
 end
 
 function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::SeqSim, preproc)
-  # random number generator
-  rng = solver.rng
-
   # retrieve problem info
   pdata = data(problem)
   pdomain = domain(problem)
+  pvars = variables(problem)
 
+  # retrieve global parameters
+  init = solver.init
+  rng = solver.rng
+
+  # initialize buffers for realization and simulation mask
+  buff, mask = initbuff(pdomain, pvars, init, data=pdata)
+
+  # consider point set with centroids for now
   pset = PointSet([centroid(pdomain, ind) for ind in 1:nelements(pdomain)])
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
-
-  varreals = map(covars.names) do var
+  varreals = map(collect(covars.names)) do var
     # unpack preprocessed parameters
-    estimator, minneighbors, maxneighbors, marginal, path, searcher, mappings = preproc[var]
-
-    # determine value type
-    V = mactypeof[var]
-
-    # pre-allocate memory for realization
-    realization = Vector{V}(undef, nelements(pdomain))
+    estimator, marginal, path, minneighbors, maxneighbors, searcher = preproc[var]
 
     # pre-allocate memory for neighbors
     neighbors = Vector{Int}(undef, maxneighbors)
 
-    # keep track of simulated locations
-    simulated = falses(nelements(pdomain))
-    if hasdata(problem)
-      table = values(pdata)
-      cols = Tables.columns(table)
-      vals = Tables.getcolumn(cols, var)
-      for (ind, datind) in mappings
-        realization[ind] = vals[datind]
-        simulated[ind] = true
-      end
-    end
+    # retrieve realization and mask for variable
+    realization = buff[var]
+    simulated = mask[var]
 
     # simulation loop
     for ind in traverse(pdomain, path)

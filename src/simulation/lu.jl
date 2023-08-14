@@ -14,7 +14,6 @@ Gaussian are drawn via LU factorization.
 
 * `variogram`     - Theoretical variogram (default to `GaussianVariogram()`)
 * `mean`          - Mean of unconditional simulation (default to `0`)
-* `mapping`       - Data mapping method (default to `NearestMapping()`)
 * `factorization` - Factorization method (default to `cholesky`)
 
 ## Joint parameters
@@ -23,23 +22,28 @@ Gaussian are drawn via LU factorization.
 
 ## Global parameters
 
-* `rng` - random number generator (default to `Random.GLOBAL_RNG`)
+* `init` - Data initialization method (default to `NearestInit()`)
+* `rng`  - Random number generator (default to `Random.GLOBAL_RNG`)
 
 ## Examples
 
 Simulate two variables `var₁` and `var₂` independently:
 
 ```julia
-julia> LUGS(:var₁ => (variogram=SphericalVariogram(),mean=10.),
-            :var₂ => (variogram=GaussianVariogram(),))
+julia> LUGS(
+         :var₁ => (; variogram=SphericalVariogram(), mean=10.0),
+         :var₂ => (; variogram=GaussianVariogram())
+       )
 ```
 
 Simulate two correlated variables `var₁` and `var₂` with correlation `0.7`:
 
 ```julia
-julia> LUGS(:var₁ => (variogram=SphericalVariogram(),mean=10.),
-            :var₂ => (variogram=GaussianVariogram(),),
-            (:var₁,:var₂) => (correlation=0.7,))
+julia> LUGS(
+         :var₁ => (; variogram=SphericalVariogram(), mean=10.0),
+         :var₂ => (; variogram=GaussianVariogram()),
+         (:var₁, :var₂) => (; correlation=0.7)
+       )
 ```
 
 ### References
@@ -63,9 +67,9 @@ julia> LUGS(:var₁ => (variogram=SphericalVariogram(),mean=10.),
 @simsolver LUGS begin
   @param variogram = GaussianVariogram()
   @param mean = nothing
-  @param mapping = NearestMapping()
   @param factorization = cholesky
   @jparam correlation = 0.0
+  @global init = NearestInit()
   @global rng = Random.GLOBAL_RNG
 end
 
@@ -73,15 +77,20 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
   # retrieve problem info
   pdata = data(problem)
   pdomain = domain(problem)
+  pvars = variables(problem)
 
-  mactypeof = Dict(name(v) => mactype(v) for v in variables(problem))
+  # retrieve global parameters
+  init = solver.init
+
+  # initialize buffers for realizations and simulation mask
+  buff, mask = initbuff(pdomain, pvars, init, data=pdata)
 
   # result of preprocessing
   preproc = Dict()
 
   for covars in covariables(problem, solver)
     conames = covars.names
-    coparams = []
+    coparams = Dict()
 
     # 1 or 2 variables can be simulated simultaneously
     @assert length(conames) ∈ (1, 2) "invalid number of covariables"
@@ -89,10 +98,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
     # preprocess parameters for individual variables
     for var in conames
       # get parameters for variable
-      varparams = covars.params[(var,)]
-
-      # determine value type
-      V = mactypeof[var]
+      varparams = covars.params[Set([var])]
 
       # determine variogram model
       γ = varparams.variogram
@@ -103,17 +109,9 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
       # check stationarity
       @assert isstationary(γ) "variogram model must be stationary"
 
-      # retrieve data values and data locations in domain
-      z₁ = V[]
-      dlocs = Int[]
-      if hasdata(problem)
-        vals = getproperty(pdata, var)
-        maps = map(pdata, pdomain, (var,), varparams.mapping)[var]
-        for (loc, dloc) in maps
-          push!(z₁, vals[dloc])
-          push!(dlocs, loc)
-        end
-      end
+      # retrieve data locations and data values in domain
+      dlocs = findall(mask[var])
+      z₁ = view(buff[var], dlocs)
 
       # retrieve simulation locations
       slocs = [l for l in 1:nelements(pdomain) if l ∉ dlocs]
@@ -126,7 +124,7 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
       C₂₂ = sill(γ) .- Variography.pairwise(γ, 𝒟s)
 
       if isempty(dlocs)
-        d₂ = zero(V)
+        d₂ = zero(eltype(z₁))
         L₂₂ = fact(Symmetric(C₂₂)).L
       else
         # covariance beween data locations
@@ -146,27 +144,24 @@ function preprocess(problem::SimulationProblem, solver::LUGS)
       end
 
       # mean for unconditional simulation
-      μ = isnothing(varparams.mean) ? zero(V) : varparams.mean
+      μ = isnothing(varparams.mean) ? zero(eltype(z₁)) : varparams.mean
 
       # save preprocessed parameters for variable
-      push!(coparams, (z₁, d₂, L₂₂, μ, dlocs, slocs))
+      coparams[Set([var])] = (z₁, d₂, L₂₂, μ, dlocs, slocs)
     end
 
     # preprocess joint parameters
     if length(conames) == 2
       # get parameters for pair of variables
-      if conames ∈ keys(covars.params)
-        jparams = covars.params[conames]
-      else
-        jparams = covars.params[reverse(conames)]
-      end
+      jparams = covars.params[conames]
 
       # 0-lag correlation between variables
       ρ = jparams.correlation
 
       # save preprocessed parameters for pair of variables
-      push!(coparams, (ρ,))
+      coparams[conames] = ρ
     end
+
     push!(preproc, conames => coparams)
   end
 
@@ -179,17 +174,22 @@ function solvesingle(::SimulationProblem, covars::NamedTuple, solver::LUGS, prep
 
   # preprocessed parameters
   conames = covars.names
-  params = preproc[conames]
+  coparams = preproc[conames]
+
+  # plain list of variable names
+  vars = collect(conames)
 
   # simulate first variable
-  Y₁, w₁ = lusim(rng, params[1])
-  result = Dict(conames[1] => Y₁)
+  v₁ = first(vars)
+  Y₁, w₁ = lusim(rng, coparams[Set([v₁])])
+  result = Dict(v₁ => Y₁)
 
   # simulate second variable
   if length(conames) == 2
-    ρ = params[3][1]
-    Y₂, w₂ = lusim(rng, params[2], ρ, w₁)
-    push!(result, conames[2] => Y₂)
+    ρ = coparams[conames]
+    v₂ = last(vars)
+    Y₂, w₂ = lusim(rng, coparams[Set([v₂])], ρ, w₁)
+    push!(result, v₂ => Y₂)
   end
 
   result
