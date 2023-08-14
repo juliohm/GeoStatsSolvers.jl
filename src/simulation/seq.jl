@@ -64,14 +64,7 @@ function preprocess(problem::SimulationProblem, solver::SeqSim)
       searcher = searcher_ui(pdomain, maxneighbors, distance, neighborhood)
 
       # save preprocessed input
-      preproc[var] = (;
-        estimator,
-        marginal,
-        path,
-        minneighbors,
-        maxneighbors,
-        searcher
-      )
+      preproc[var] = (; estimator, marginal, path, minneighbors, maxneighbors, searcher)
     end
   end
 

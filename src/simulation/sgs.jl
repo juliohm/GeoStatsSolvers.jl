@@ -76,15 +76,7 @@ function preprocess(problem::SimulationProblem, solver::SGS)
       distance = varparams.distance
 
       # equivalent parameters for SeqSim solver
-      param = (;
-        estimator,
-        marginal,
-        path,
-        minneighbors,
-        maxneighbors,
-        neighborhood,
-        distance
-      )
+      param = (; estimator, marginal, path, minneighbors, maxneighbors, neighborhood, distance)
 
       push!(params, var => param)
     end
