@@ -13,8 +13,9 @@
   method = GeoStatsSolvers.searcher_ui(domain, nothing, Euclidean(), nothing)
   @test method isa KNearestSearch
   @test maxneighbors(method) == 3
-
-  @test_throws ArgumentError GeoStatsSolvers.searcher_ui(domain, 5, Euclidean(), nothing)
+  method = GeoStatsSolvers.searcher_ui(domain, 4, Euclidean(), nothing)
+  @test method isa KNearestSearch
+  @test maxneighbors(method) == 3
 
   # -----------
   # Kriging UI

@@ -11,10 +11,15 @@ end-user inputs such as `maxneighbors`, `metric` and `neighborhood`.
 function searcher_ui(domain, maxneighbors, metric, neighborhood)
   # number of domain elements
   nelem = nelements(domain)
-  nmax = isnothing(maxneighbors) ? nelem : maxneighbors
 
-  if nmax > nelem
-    throw(ArgumentError("maxneighbors must be smaller than number of elements"))
+  # number of neighbors
+  nmax = if isnothing(maxneighbors)
+    nelem
+  elseif maxneighbors < 1 || maxneighbors > nelem
+    @warn "Invalid maximum number of neighbors. Using all elements..."
+    nelem
+  else
+    maxneighbors
   end
 
   if isnothing(neighborhood)
