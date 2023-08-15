@@ -16,7 +16,7 @@ function searcher_ui(domain, maxneighbors, metric, neighborhood)
   nmax = if isnothing(maxneighbors)
     nelem
   elseif maxneighbors < 1 || maxneighbors > nelem
-    @warn "Invalid maximum number of neighbors. Using all elements..."
+    @warn "Invalid maximum number of neighbors. Adjusting to $nelem..."
     nelem
   else
     maxneighbors
