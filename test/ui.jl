@@ -13,7 +13,12 @@
   method = GeoStatsSolvers.searcher_ui(domain, nothing, Euclidean(), nothing)
   @test method isa KNearestSearch
   @test maxneighbors(method) == 3
-  method = @test_logs (:warn, "Invalid maximum number of neighbors. Adjusting to 3...") GeoStatsSolvers.searcher_ui(domain, 4, Euclidean(), nothing)
+  method = @test_logs (:warn, "Invalid maximum number of neighbors. Adjusting to 3...") GeoStatsSolvers.searcher_ui(
+    domain,
+    4,
+    Euclidean(),
+    nothing
+  )
   @test method isa KNearestSearch
   @test maxneighbors(method) == 3
 
