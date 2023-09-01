@@ -1,7 +1,7 @@
 name = "GeoStatsSolvers"
 uuid = "50e95529-e670-4fa6-84ad-e28f686cc091"
 authors = ["Júlio Hoffimann and contributors"]
-version = "0.5.1"
+version = "0.6.0"
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
