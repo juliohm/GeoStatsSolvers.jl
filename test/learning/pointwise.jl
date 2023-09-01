@@ -15,7 +15,7 @@
   T = georef((X=X + ϵ₁, Y=Y + ϵ₂))
 
   # view versions
-  inds = shuffle(rng, 1:nitems(S))
+  inds = shuffle(rng, 1:nrow(S))
   Sv = view(S, inds)
   Tv = view(T, inds)
 

@@ -5,6 +5,7 @@
 module GeoStatsSolvers
 
 using Meshes
+using GeoTables
 using GeoStatsBase
 using Variography
 using KrigingEstimators
