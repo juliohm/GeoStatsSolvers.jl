@@ -105,7 +105,7 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::SPD
   vtable = (; varreal...)
 
   # change of support
-  vdata = geotable(𝒟, vtable=vtable)
+  vdata = GeoTable(𝒟, vtable=vtable)
   edata = integrate(vdata, vars...)
 
   # columns of element table
