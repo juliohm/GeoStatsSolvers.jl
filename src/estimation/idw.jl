@@ -17,7 +17,7 @@ locations.
 * `maxneighbors` - Maximum number of neighbors (default to `nothing`)
 * `neighborhood` - Search neighborhood (default to `nothing`)
 * `distance`     - A distance defined in Distances.jl (default to `Euclidean()`)
-* `power`        - Power of the distances (default to `1`)
+* `exponent`     - Exponent of the distances (default to `1`)
 * `path`         - The path algorithm used to iterate over the domain (default to `LinearPath()`)
 
 The `maxneighbors` option can be used to perform inverse distance weighting
@@ -51,7 +51,7 @@ Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced d
   @param maxneighbors = nothing
   @param neighborhood = nothing
   @param distance = Euclidean()
-  @param power = 1
+  @param exponent = 1
   @param path = LinearPath()
 end
 
@@ -84,14 +84,14 @@ function solve(problem::EstimationProblem, solver::IDW)
       maxneighbors = varparams.maxneighbors
       neighborhood = varparams.neighborhood
       distance = varparams.distance
-      power = varparams.power
+      exponent = varparams.exponent
       path = varparams.path
 
       nmin = minneighbors
       nmax = isnothing(maxneighbors) ? n : min(maxneighbors, n)
 
       @assert n > 0 "estimation requires data"
-      @assert power > 0 "power must be positive"
+      @assert exponent > 0 "exponent must be positive"
       @assert nmin ≤ nmax "invalid min/max number of neighbors"
 
       # determine bounded search method
@@ -123,7 +123,7 @@ function solve(problem::EstimationProblem, solver::IDW)
         else
           is = view(neighbors, 1:nneigh)
           ds = view(distances, 1:nneigh)
-          ws = 1 ./ ds .^ power
+          ws = 1 ./ ds .^ exponent
           Σw = sum(ws)
 
           if isinf(Σw) # some distance is zero?
