@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------
 
 """
-    IDW(var₁=>param₁, var₂=>param₂, ...)
+    IDWSolver(var₁=>param₁, var₂=>param₂, ...)
 
 The inverse distance weighting estimation solver introduced
 in the very early days of geostatistics by Shepard 1968. It
@@ -46,7 +46,7 @@ Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced d
   poor statistical properties (lacks covariance model) and should mainly be used
   for qualitative purposes.
 """
-@estimsolver IDW begin
+@estimsolver IDWSolver begin
   @param minneighbors = 1
   @param maxneighbors = nothing
   @param neighborhood = nothing
@@ -55,7 +55,7 @@ Shepard 1968. *A two-dimensional interpolation function for irregularly-spaced d
   @param path = LinearPath()
 end
 
-function solve(problem::EstimationProblem, solver::IDW)
+function solve(problem::EstimationProblem, solver::IDWSolver)
   # retrieve problem info
   pdata = data(problem)
   dtable = values(pdata)

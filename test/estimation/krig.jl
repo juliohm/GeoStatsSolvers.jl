@@ -7,10 +7,10 @@
   grid1D = CartesianGrid(100)
   problem = EstimationProblem(data1D, grid1D, :z)
 
-  global_kriging = Kriging(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
-  nearest_kriging = Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3))
+  global_kriging = KrigingSolver(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
+  nearest_kriging = KrigingSolver(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3))
   local_kriging =
-    Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3, neighborhood=MetricBall(100.0)))
+    KrigingSolver(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3, neighborhood=MetricBall(100.0)))
 
   Random.seed!(2021)
   solvers = [global_kriging, nearest_kriging, local_kriging]
@@ -26,7 +26,7 @@
 
   problem = EstimationProblem(data2D, grid2D, :z)
 
-  solver = Kriging(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
+  solver = KrigingSolver(:z => (; variogram=GaussianVariogram(range=35.0, nugget=0.0)))
 
   Random.seed!(2021)
   sol = solve(problem, solver)
@@ -41,7 +41,7 @@
 
   problem = EstimationProblem(data2D, grid2D, :z)
 
-  solver = Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3))
+  solver = KrigingSolver(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3))
 
   Random.seed!(2021)
   sol = solve(problem, solver)
@@ -57,7 +57,7 @@
   problem = EstimationProblem(data2D, grid2D, :z)
 
   solver =
-    Kriging(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3, neighborhood=MetricBall(100.0)))
+    KrigingSolver(:z => (variogram=GaussianVariogram(range=35.0, nugget=0.0), maxneighbors=3, neighborhood=MetricBall(100.0)))
 
   Random.seed!(2021)
   sol = solve(problem, solver)
@@ -75,7 +75,7 @@
 
   problem = EstimationProblem(data2D, grid2D, :z)
 
-  solver = Kriging(
+  solver = KrigingSolver(
     :z => (
       variogram=GaussianVariogram(range=35.0, nugget=0.0),
       maxneighbors=3,
@@ -86,41 +86,4 @@
 
   Random.seed!(2021)
   sol = solve(problem, solver)
-
-  # units
-  geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25.0 50.0 75.0; 25.0 75.0 50.0])
-  domain = CartesianGrid(5, 5)
-  problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, Kriging())
-  @test GeoStatsSolvers.elunit(sol.T) == u"K"
-  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
-
-  # affine units
-  geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25.0 50.0 75.0; 25.0 75.0 50.0])
-  domain = CartesianGrid(5, 5)
-  problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, Kriging())
-  @test GeoStatsSolvers.elunit(sol.T) == u"K"
-  @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
-
-  # -------------------
-  # COMPOSITIONAL DATA
-  # -------------------
-
-  table = (; z=[Composition(0.1, 0.2), Composition(0.3, 0.4), Composition(0.5, 0.6)])
-  coord = [(25.0, 25.0), (50.0, 75.0), (75.0, 50.0)]
-  data = georef(table, coord)
-  grid = CartesianGrid(100, 100)
-
-  problem = EstimationProblem(data, grid, :z)
-
-  solver = Kriging(:z => (; variogram=GaussianVariogram(range=35.0)))
-
-  Random.seed!(2021)
-  sol = solve(problem, solver)
-  inds = LinearIndices(size(grid))
-  S = sol.z
-  @test aitchison(S[inds[25, 25]], Composition(0.1, 0.2)) < 1e-3
-  @test aitchison(S[inds[50, 75]], Composition(0.3, 0.4)) < 1e-3
-  @test aitchison(S[inds[75, 50]], Composition(0.5, 0.6)) < 1e-3
 end

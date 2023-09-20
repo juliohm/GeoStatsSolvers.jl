@@ -39,12 +39,12 @@ end-user inputs such as `variogram`, `mean`, `degree` and `drifts`.
 """
 function kriging_ui(domain, variogram, mean, degree, drifts)
   if !isnothing(drifts)
-    ExternalDriftKriging(variogram, drifts)
+    GeoStatsModels.ExternalDriftKriging(variogram, drifts)
   elseif !isnothing(degree)
-    UniversalKriging(variogram, degree, embeddim(domain))
+    GeoStatsModels.UniversalKriging(variogram, degree, embeddim(domain))
   elseif !isnothing(mean)
-    SimpleKriging(variogram, mean)
+    GeoStatsModels.SimpleKriging(variogram, mean)
   else
-    OrdinaryKriging(variogram)
+    GeoStatsModels.OrdinaryKriging(variogram)
   end
 end

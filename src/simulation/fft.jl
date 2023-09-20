@@ -112,7 +112,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
           kdat = georef(dtable, centroid.(ddomain))
           kdom = PointSet(centroid.(pdomain))
           prob = EstimationProblem(kdat, kdom, var)
-          krig = Kriging(
+          krig = KrigingSolver(
             var => (
               variogram=γ,
               mean=μ,

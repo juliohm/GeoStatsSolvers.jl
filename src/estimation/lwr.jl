@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------
 
 """
-    LWR(var₁=>param₁, var₂=>param₂, ...)
+    LWRSolver(var₁=>param₁, var₂=>param₂, ...)
 
 The locally weighted regression (a.k.a. LOESS) estimation solver
 introduced by Cleveland 1979. It is the most natural generalization
@@ -50,7 +50,7 @@ Two `neighborhood` search methods are available:
 * In the current implementation, the estimation variance is computed
   assuming Gaussian residuals. 
 """
-@estimsolver LWR begin
+@estimsolver LWRSolver begin
   @param minneighbors = 1
   @param maxneighbors = nothing
   @param neighborhood = nothing
@@ -59,7 +59,7 @@ Two `neighborhood` search methods are available:
   @param path = LinearPath()
 end
 
-function solve(problem::EstimationProblem, solver::LWR)
+function solve(problem::EstimationProblem, solver::LWRSolver)
   # retrieve problem info
   pdata = data(problem)
   dtable = values(pdata)

@@ -1,4 +1,4 @@
-import GeoStatsBase: fit, predict, predictprob, status
+import GeoStatsModels: fit, predict, predictprob, status
 
 # ----------------
 # DUMMY ESTIMATOR

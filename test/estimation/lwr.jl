@@ -9,7 +9,7 @@
   sdomain = CartesianGrid((0.0,), (1.0,), dims=(N,))
   problem = EstimationProblem(sdata, sdomain, :y)
 
-  solver = LWR(:y => (; maxneighbors=10))
+  solver = LWRSolver(:y => (; maxneighbors=10))
 
   sol = solve(problem, solver)
 
@@ -21,8 +21,8 @@
   sdomain = CartesianGrid(100, 100)
   problem = EstimationProblem(sdata, sdomain, :z)
 
-  solver₃ = LWR(:z => (; maxneighbors=3))
-  solver₄ = LWR(:z => (; maxneighbors=4))
+  solver₃ = LWRSolver(:z => (; maxneighbors=3))
+  solver₄ = LWRSolver(:z => (; maxneighbors=4))
 
   sol₃ = solve(problem, solver₃)
   sol₄ = solve(problem, solver₄)
@@ -32,7 +32,7 @@
   sdomain = CartesianGrid(100, 100)
   problem = EstimationProblem(sdata, sdomain, :z)
 
-  solver = LWR(:z => (maxneighbors=3, path=MultiGridPath()))
+  solver = LWRSolver(:z => (maxneighbors=3, path=MultiGridPath()))
 
   sol = solve(problem, solver)
 
@@ -48,7 +48,7 @@
   end
   problem = EstimationProblem(sdata, sdomain, :z)
 
-  solver = LWR(:z => (distance=Haversine(6371.0), maxneighbors=49))
+  solver = LWRSolver(:z => (distance=Haversine(6371.0), maxneighbors=49))
 
   sol = solve(problem, solver)
 
@@ -56,7 +56,7 @@
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, LWR())
+  sol = solve(problem, LWRSolver())
   @test GeoStatsSolvers.elunit(sol.T) == u"K"
   @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 
@@ -64,7 +64,7 @@
   geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, LWR())
+  sol = solve(problem, LWRSolver())
   @test GeoStatsSolvers.elunit(sol.T) == u"K"
   @test GeoStatsSolvers.elunit(sol.T_variance) == u"K^2"
 end

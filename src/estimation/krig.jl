@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------
 
 """
-    Kriging(var₁=>param₁, var₂=>param₂, ...)
+    KrigingSolver(var₁=>param₁, var₂=>param₂, ...)
 
 The Kriging estimation solver introduced by Matheron 1971.
 
@@ -44,7 +44,7 @@ the `mean`, and the variable `:var₂` with Universal Kriging
 by specifying the `degree` and the `variogram` model.
 
 ```julia
-julia> Kriging(
+julia> KrigingSolver(
   :var₁ => (mean=1.,),
   :var₂ => (degree=1, variogram=SphericalVariogram(range=20.))
 )
@@ -54,14 +54,14 @@ Solve all variables of the problem with the default parameters
 (i.e. Ordinary Kriging with unit Gaussian variogram):
 
 ```julia
-julia> Kriging()
+julia> KrigingSolver()
 ```
 
 ### References
 
 * Matheron 1971. *The Theory of Regionalized Variables and Its Applications.*
 """
-@estimsolver Kriging begin
+@estimsolver KrigingSolver begin
   @param variogram = GaussianVariogram()
   @param mean = nothing
   @param degree = nothing
@@ -73,7 +73,7 @@ julia> Kriging()
   @param path = LinearPath()
 end
 
-function preprocess(problem::EstimationProblem, solver::Kriging)
+function preprocess(problem::EstimationProblem, solver::KrigingSolver)
   # retrieve problem info
   pdata = data(problem)
   dtable = values(pdata)
@@ -127,7 +127,7 @@ function preprocess(problem::EstimationProblem, solver::Kriging)
   preproc
 end
 
-function solve(problem::EstimationProblem, solver::Kriging)
+function solve(problem::EstimationProblem, solver::KrigingSolver)
   # retrieve problem info
   pdomain = domain(problem)
 
@@ -177,10 +177,10 @@ function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
 
   # predict everywhere
   inds = traverse(pdomain, path)
-  pred = [predict(krig, var, pdomain[ind]) for ind in inds]
+  pred = [predictprob(krig, var, pdomain[ind]) for ind in inds]
 
-  varμ = first.(pred)
-  varσ = last.(pred)
+  varμ = mean.(pred)
+  varσ = Statistics.var.(pred)
 
   varμ, varσ
 end
@@ -223,12 +223,12 @@ function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
       krig = fit(estimator, samples)
 
       # save mean and variance
-      predict(krig, var, pdomain[ind])
+      predictprob(krig, var, pdomain[ind])
     end
   end
 
-  varμ = first.(pred)
-  varσ = last.(pred)
+  varμ = mean.(pred)
+  varσ = Statistics.var.(pred)
 
   varμ, varσ
 end

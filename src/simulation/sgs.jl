@@ -61,7 +61,7 @@ function preprocess(problem::SimulationProblem, solver::SGS)
       varparams = covars.params[Set([var])]
 
       # determine Kriging estimator
-      estimator = SimpleKriging(varparams.variogram, varparams.mean)
+      estimator = GeoStatsModels.SimpleKriging(varparams.variogram, varparams.mean)
 
       # determine marginal distribution
       μ = varparams.mean

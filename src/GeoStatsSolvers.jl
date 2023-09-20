@@ -8,7 +8,7 @@ using Meshes
 using GeoTables
 using GeoStatsBase
 using Variography
-using KrigingEstimators
+using GeoStatsModels
 
 using Tables
 using Distributions
@@ -51,9 +51,9 @@ export
   # -----------
   # ESTIMATION
   # -----------
-  IDW,
-  LWR,
-  Kriging,
+  IDWSolver,
+  LWRSolver,
+  KrigingSolver,
 
   # -----------
   # SIMULATION

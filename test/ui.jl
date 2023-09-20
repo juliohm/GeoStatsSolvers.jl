@@ -28,11 +28,11 @@
 
   grid = CartesianGrid(10, 10)
   krig = GeoStatsSolvers.kriging_ui(grid, GaussianVariogram(), nothing, nothing, nothing)
-  @test krig isa OrdinaryKriging
+  @test krig isa GeoStatsModels.OrdinaryKriging
   krig = GeoStatsSolvers.kriging_ui(grid, GaussianVariogram(), 0.0, nothing, nothing)
-  @test krig isa SimpleKriging
+  @test krig isa GeoStatsModels.SimpleKriging
   krig = GeoStatsSolvers.kriging_ui(grid, GaussianVariogram(), nothing, 2, nothing)
-  @test krig isa UniversalKriging
+  @test krig isa GeoStatsModels.UniversalKriging
   krig = GeoStatsSolvers.kriging_ui(grid, GaussianVariogram(), nothing, nothing, [x -> 1])
-  @test krig isa ExternalDriftKriging
+  @test krig isa GeoStatsModels.ExternalDriftKriging
 end

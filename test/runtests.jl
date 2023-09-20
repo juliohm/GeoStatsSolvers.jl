@@ -3,7 +3,7 @@ using Meshes
 using GeoTables
 using GeoStatsBase
 using Variography
-using KrigingEstimators
+using GeoStatsModels
 using Distances
 using Distributions
 using CategoricalArrays

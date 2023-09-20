@@ -4,7 +4,7 @@
   domain = CartesianGrid(100, 100)
   problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:z => (; maxneighbors=3))
+  solver = IDWSolver(:z => (; maxneighbors=3))
 
   sol = solve(problem, solver)
 
@@ -13,7 +13,7 @@
   domain = CartesianGrid(100, 100)
   problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:z => (maxneighbors=3, path=MultiGridPath()))
+  solver = IDWSolver(:z => (maxneighbors=3, path=MultiGridPath()))
 
   sol = solve(problem, solver)
 
@@ -22,7 +22,7 @@
   domain = CartesianGrid((1.0, -89.0), (359.0, 89.0), dims=(200, 100))
   problem = EstimationProblem(geodata, domain, :z)
 
-  solver = IDW(:z => (maxneighbors=3, distance=Haversine(1.0)))
+  solver = IDWSolver(:z => (maxneighbors=3, distance=Haversine(1.0)))
 
   sol = solve(problem, solver)
 
@@ -30,14 +30,14 @@
   geodata = georef((; T=[1.0, 0.0, 1.0]u"K"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, IDW())
+  sol = solve(problem, IDWSolver())
   @test GeoStatsSolvers.elunit(sol.T) == u"K"
 
   # affine units
   geodata = georef((; T=[-272.15, -273.15, -272.15]u"°C"), [25.0 50.0 75.0; 25.0 75.0 50.0])
   domain = CartesianGrid(5, 5)
   problem = EstimationProblem(geodata, domain, :T)
-  sol = solve(problem, IDW())
+  sol = solve(problem, IDWSolver())
   @test GeoStatsSolvers.elunit(sol.T) == u"K"
 
   # -------------------
@@ -51,7 +51,7 @@
 
   problem = EstimationProblem(data, grid, :z)
 
-  solver = IDW()
+  solver = IDWSolver()
 
   Random.seed!(2021)
   sol = solve(problem, solver)
