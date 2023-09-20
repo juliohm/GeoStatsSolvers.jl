@@ -17,7 +17,7 @@ inverse Fourier transform.
 * `mean`      - mean of Gaussian field (default to `0`)
 
 In the case of conditional simulation, the following parameters
-can be passed to the underlying [`KrigingSolver`](@ref):
+can be passed to the underlying Kriging solver:
 
 * `minneighbors` - Minimum number of neighbors (default to `1`)
 * `maxneighbors` - Maximum number of neighbors (default to `nothing)

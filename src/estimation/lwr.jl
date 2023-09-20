@@ -43,9 +43,9 @@ Two `neighborhood` search methods are available:
   package for fast data lookup.
 
 * Locally weighted regression (LWR or LOESS) is a popular non-parametric
-  solver, however it still has poor statistical properties compared to
-  other estimation solvers such as [`KrigingSolver`](@ref) that explicitly
-  model spatial correlation.
+  method, however it still has poor statistical properties compared to
+  other estimation methods such as Kriging that explicitly model geospatial
+  correlation.
 
 * In the current implementation, the estimation variance is computed
   assuming Gaussian residuals. 
