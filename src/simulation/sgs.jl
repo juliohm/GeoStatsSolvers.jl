@@ -8,7 +8,7 @@
 The sequential Gaussian simulation solver introduced by Gomez-Hernandez 1993.
 It traverses all locations of the geospatial domain according to a path,
 approximates the conditional Gaussian distribution within a neighborhood
-using [`Kriging`](@ref), and assigns a value to the center of the
+using [`KrigingSolver`](@ref), and assigns a value to the center of the
 neighborhood by sampling from this distribution.
 
 ## Parameters

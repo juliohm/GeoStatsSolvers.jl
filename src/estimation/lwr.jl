@@ -7,7 +7,7 @@
 
 The locally weighted regression (a.k.a. LOESS) estimation solver
 introduced by Cleveland 1979. It is the most natural generalization
-of [`IDW`](@ref) in which one is allowed to use a custom weight
+of [`IDWSolver`](@ref) in which one is allowed to use a custom weight
 function instead of distance-based weights.
 
 ## Parameters
@@ -43,8 +43,8 @@ Two `neighborhood` search methods are available:
   package for fast data lookup.
 
 * Locally weighted regression (LWR or LOESS) is a popular non-parametric
-  method, however it still has poor statistical properties compared to
-  other estimation methods such as [`Kriging`](@ref) that explicitly
+  solver, however it still has poor statistical properties compared to
+  other estimation solvers such as [`KrigingSolver`](@ref) that explicitly
   model spatial correlation.
 
 * In the current implementation, the estimation variance is computed
