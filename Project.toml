@@ -1,7 +1,7 @@
 name = "GeoStatsSolvers"
 uuid = "50e95529-e670-4fa6-84ad-e28f686cc091"
 authors = ["Júlio Hoffimann and contributors"]
-version = "0.7.2"
+version = "0.7.3"
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
@@ -28,7 +28,7 @@ CpuId = "0.3"
 Distances = "0.10"
 Distributions = "0.25"
 FFTW = "1.5"
-GeoStatsBase = "0.36"
+GeoStatsBase = "0.37"
 GeoStatsModels = "0.1"
 GeoTables = "1.7"
 MLJModelInterface = "1.6"
