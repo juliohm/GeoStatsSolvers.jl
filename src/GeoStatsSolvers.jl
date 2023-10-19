@@ -17,12 +17,13 @@ using TableTransforms
 using Distances: Euclidean
 using Bessels: gamma
 using Unitful: Units, AffineUnits
-using LinearAlgebra
-using Statistics
 using Unitful
-using Random
 using CpuId
 using FFTW
+
+using LinearAlgebra
+using Statistics
+using Random
 
 import GeoStatsBase: preprocess, solve, solvesingle
 
