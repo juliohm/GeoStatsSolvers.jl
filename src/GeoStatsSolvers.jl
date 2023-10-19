@@ -69,10 +69,6 @@ export
   # ---------
   # LEARNING
   # ---------
-  PointwiseLearn,
-
-  # utilities
-  learn,
-  perform
+  PointwiseLearn
 
 end
