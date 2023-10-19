@@ -35,9 +35,6 @@ function solve(problem::LearningProblem, solver::PointwiseLearn)
   ptask = task(problem)
   model = solver.model
 
-  # assert model is compatible with task
-  @assert iscompatible(model, ptask) "$model is not compatible with $ptask"
-
   # learn model on source data
   lmodel = learn(ptask, sdata, model)
 
