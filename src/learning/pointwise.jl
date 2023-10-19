@@ -11,7 +11,7 @@ illustrate the challenges of applying classical machine learning
 
 ## Parameters
 
-* `model` - Learning model implementing the `MLJModelInterface.jl`.
+* `model` - Learning model supported by the StatsLearnModels.jl package.
 
 ### References
 
@@ -36,10 +36,11 @@ function solve(problem::LearningProblem, solver::PointwiseLearn)
   model = solver.model
 
   # learn model on source data
-  lmodel = learn(ptask, sdata, model)
+  learn = Learn(values(sdata), model, features(ptask) => label(ptask))
 
   # apply model to target data
-  perform(ptask, tdata, lmodel)
+  pred = learn(values(tdata))
+  georef(pred, domain(tdata))
 end
 
 # -----------

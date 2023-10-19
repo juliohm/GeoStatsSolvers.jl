@@ -4,15 +4,16 @@ using GeoTables
 using GeoStatsBase
 using Variography
 using GeoStatsModels
+using StatsLearnModels
 using Distances
 using Distributions
 using CategoricalArrays
-using Unitful
-using CoDa
-using MLJ: @load
 using LinearAlgebra
 using DelimitedFiles
-using Test, Random
+using Unitful
+using Random
+using CoDa
+using Test
 
 # dummy definitions
 include("dummy.jl")
