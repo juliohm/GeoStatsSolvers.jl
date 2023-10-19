@@ -36,10 +36,10 @@ function solve(problem::LearningProblem, solver::PointwiseLearn)
   model = solver.model
 
   # learn model on source data
-  learn = Learn(values(sdata), model, features(ptask) => label(ptask))
+  lmodel = Learn(values(sdata), model, features(ptask) => label(ptask))
 
   # apply model to target data
-  pred = learn(values(tdata))
+  pred = lmodel(values(tdata))
   georef(pred, domain(tdata))
 end
 
