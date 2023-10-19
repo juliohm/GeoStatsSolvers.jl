@@ -6,9 +6,10 @@ module GeoStatsSolvers
 
 using Meshes
 using GeoTables
-using GeoStatsBase
 using Variography
+using GeoStatsBase
 using GeoStatsModels
+using StatsLearnModels
 
 using Tables
 using Distributions
@@ -23,10 +24,6 @@ using FFTW
 using LinearAlgebra
 using Statistics
 using Random
-
-# aliases
-import MLJModelInterface
-const MI = MLJModelInterface
 
 import GeoStatsBase: preprocess, solve, solvesingle
 
@@ -45,7 +42,6 @@ include("simulation/spde.jl")
 include("simulation/cookie.jl")
 
 include("learning/pointwise.jl")
-include("learning/utils.jl")
 
 export
   # -----------

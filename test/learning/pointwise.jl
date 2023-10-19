@@ -1,6 +1,5 @@
 @testset "PointwiseLearn" begin
   rng = MersenneTwister(1234)
-  tree = @load DecisionTreeClassifier pkg = DecisionTree verbosity = 0
 
   # synthetic data
   f(x, y) = sin(4 * (abs(x) + abs(y))) < 0 ? 1 : 0
@@ -11,7 +10,7 @@
   ϵ₂ = 0.1randn(rng, Float64, size(Y))
 
   # source and target data
-  S = georef((X=X, Y=Y, Z=Z))
+  S = georef((; X, Y, Z))
   T = georef((X=X + ϵ₁, Y=Y + ϵ₂))
 
   # view versions
@@ -27,7 +26,7 @@
   𝒫₂ = LearningProblem(Sv, Tv, 𝓉)
 
   # pointwise solver
-  ℒ = PointwiseLearn(tree())
+  ℒ = PointwiseLearn(DecisionTreeClassifier())
 
   R₁ = solve(𝒫₁, ℒ)
   R₂ = solve(𝒫₂, ℒ)

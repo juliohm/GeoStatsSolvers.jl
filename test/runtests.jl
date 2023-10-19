@@ -1,15 +1,15 @@
 using GeoStatsSolvers
 using Meshes
 using GeoTables
-using GeoStatsBase
 using Variography
+using GeoStatsBase
 using GeoStatsModels
+using StatsLearnModels
 using Distances
 using Distributions
 using CategoricalArrays
 using Unitful
 using CoDa
-using MLJ: @load
 using LinearAlgebra
 using DelimitedFiles
 using Test, Random
