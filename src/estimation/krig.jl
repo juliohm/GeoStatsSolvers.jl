@@ -173,11 +173,11 @@ function exactsolve(problem::EstimationProblem, var::Symbol, preproc)
   path = preproc[var].path
 
   # fit estimator once
-  krig = fit(estimator, pdata)
+  krig = GeoStatsModels.fit(estimator, pdata)
 
   # predict everywhere
   inds = traverse(pdomain, path)
-  pred = [predictprob(krig, var, pdomain[ind]) for ind in inds]
+  pred = [GeoStatsModels.predictprob(krig, var, pdomain[ind]) for ind in inds]
 
   varμ = mean.(pred)
   varσ = Statistics.var.(pred)
@@ -220,10 +220,10 @@ function approxsolve(problem::EstimationProblem, var::Symbol, preproc)
       samples = view(pdata, nview)
 
       # fit estimator to data
-      krig = fit(estimator, samples)
+      krig = GeoStatsModels.fit(estimator, samples)
 
       # save mean and variance
-      predictprob(krig, var, pdomain[ind])
+      GeoStatsModels.predictprob(krig, var, pdomain[ind])
     end
   end
 

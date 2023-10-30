@@ -118,11 +118,11 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::Seq
           end
 
           # fit distribution estimator
-          fitted = fit(estimator, neigh)
+          fitted = GeoStatsModels.fit(estimator, neigh)
 
           # draw from conditional or marginal
-          distribution = if status(fitted)
-            predictprob(fitted, var, pset[ind])
+          distribution = if GeoStatsModels.status(fitted)
+            GeoStatsModels.predictprob(fitted, var, pset[ind])
           else
             marginal
           end
