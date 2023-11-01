@@ -63,9 +63,6 @@ export
   SGS,
   SPDEGS,
 
-  # meta solvers
-  CookieCutter,
-
   # ---------
   # LEARNING
   # ---------
