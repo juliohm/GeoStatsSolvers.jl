@@ -63,7 +63,7 @@ function preprocess(problem::SimulationProblem, solver::FFTGS)
   # retrieve problem info
   pdata = data(problem)
   pdomain = domain(problem)
-  pgrid, _ = unview(pdomain)
+  pgrid = parent(pdomain)
   dims = size(pgrid)
   nelms = nelements(pgrid)
   center = CartesianIndex(dims .÷ 2)
@@ -148,7 +148,8 @@ function solvesingle(problem::SimulationProblem, covars::NamedTuple, solver::FFT
 
   # retrieve problem info
   pdomain = domain(problem)
-  pgrid, inds = unview(pdomain)
+  pgrid = parent(pdomain)
+  inds = parentindices(pdomain)
   dims = size(pgrid)
 
   varreal = map(collect(covars.names)) do var
