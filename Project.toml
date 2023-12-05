@@ -1,7 +1,7 @@
 name = "GeoStatsSolvers"
 uuid = "50e95529-e670-4fa6-84ad-e28f686cc091"
 authors = ["Júlio Hoffimann and contributors"]
-version = "0.7.12"
+version = "0.7.13"
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
@@ -39,7 +39,7 @@ StatsLearnModels = "0.2"
 TableTransforms = "1.9"
 Tables = "1.7"
 Unitful = "1.15"
-Variography = "0.19"
+Variography = "0.20"
 julia = "1.9"
 
 [extras]
